@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Wine } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const [name, setName] = useState('');
   const [adminCode, setAdminCode] = useState('');
   const { addPlayer } = useGame();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleJoin = () => {
     if (!name.trim()) {
@@ -27,6 +29,10 @@ const Index = () => {
       title: "Welcome to the wine tasting!",
       description: `Joined as ${isAdmin ? 'host' : 'guest'}: ${name}`,
     });
+
+    if (!isAdmin) {
+      navigate('/waiting');
+    }
   };
 
   return (
