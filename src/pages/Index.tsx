@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Wine } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const [name, setName] = useState('');
@@ -13,7 +14,7 @@ const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (!name.trim()) {
       toast({
         title: "Name required",
@@ -23,15 +24,51 @@ const Index = () => {
       return;
     }
 
-    const isAdmin = adminCode === '1234'; // Simple admin code for demo
-    addPlayer(name, isAdmin);
-    toast({
-      title: "Welcome to the wine tasting!",
-      description: `Joined as ${isAdmin ? 'host' : 'guest'}: ${name}`,
-    });
+    const isHost = adminCode === '1234'; // Simple admin code for demo
 
-    if (!isAdmin) {
-      navigate('/waiting');
+    try {
+      if (isHost) {
+        // Create a new game session for the host
+        const { data: sessionData, error: sessionError } = await supabase
+          .from('game_sessions')
+          .insert([
+            { host_id: name }
+          ])
+          .select()
+          .single();
+
+        if (sessionError) throw sessionError;
+
+        // Add host to game_players
+        const { error: playerError } = await supabase
+          .from('game_players')
+          .insert([
+            {
+              session_id: sessionData.id,
+              player_name: name,
+              is_host: true
+            }
+          ]);
+
+        if (playerError) throw playerError;
+
+        addPlayer(name, true);
+        navigate(`/host-lobby/${sessionData.id}`);
+      } else {
+        addPlayer(name, false);
+        navigate('/waiting');
+      }
+
+      toast({
+        title: "Welcome to the wine tasting!",
+        description: `Joined as ${isHost ? 'host' : 'guest'}: ${name}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error joining session",
+        description: "There was a problem joining the session. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 

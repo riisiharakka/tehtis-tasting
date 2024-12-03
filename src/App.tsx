@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { GameProvider } from "@/contexts/GameContext";
 import Index from "./pages/Index";
 import WaitingScreen from "./pages/WaitingScreen";
+import HostLobby from "./pages/HostLobby";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/waiting" element={<WaitingScreen />} />
+            <Route path="/host-lobby/:sessionId" element={<HostLobby />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
