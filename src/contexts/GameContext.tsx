@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 type Player = {
   id: string;
@@ -24,7 +24,7 @@ type GameContextType = {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-export function GameProvider({ children }: { children: React.ReactNode }) {
+export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [currentRound, setCurrentRound] = useState<Round | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<Player>();
@@ -67,7 +67,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       {children}
     </GameContext.Provider>
   );
-}
+};
 
 export function useGame() {
   const context = useContext(GameContext);
