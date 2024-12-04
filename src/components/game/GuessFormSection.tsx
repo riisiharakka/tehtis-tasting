@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 
 type GuessFormSectionProps = {
   currentRound: {
@@ -22,6 +24,31 @@ export const GuessFormSection = ({
   onBack,
   showBackButton,
 }: GuessFormSectionProps) => {
+  const { toast } = useToast();
+
+  const handleSubmit = async () => {
+    const currentGuess = guesses[currentRound.id];
+    if (!currentGuess?.country || !currentGuess?.selector) {
+      toast({
+        title: "Missing fields",
+        description: "Please select both a country and who selected the wine.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      onSubmit();
+    } catch (error) {
+      console.error('Error submitting guess:', error);
+      toast({
+        title: "Error",
+        description: "Could not submit your guess. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -78,7 +105,7 @@ export const GuessFormSection = ({
 
       <div className="space-y-4">
         <Button
-          onClick={onSubmit}
+          onClick={handleSubmit}
           className="w-full bg-wine hover:bg-wine/90 text-white"
           disabled={!guesses[currentRound.id]?.country || !guesses[currentRound.id]?.selector}
         >

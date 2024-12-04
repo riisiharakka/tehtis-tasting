@@ -90,7 +90,7 @@ export const RoundsList = ({
       // Check if a guess already exists
       const { data: existingGuess, error: checkError } = await supabase
         .from('player_guesses')
-        .select('id')
+        .select('*')
         .eq('player_id', playerId)
         .eq('round_id', roundId)
         .maybeSingle();
@@ -100,6 +100,7 @@ export const RoundsList = ({
         throw checkError;
       }
 
+      let error;
       if (existingGuess) {
         // Update existing guess
         const { error: updateError } = await supabase
@@ -108,9 +109,9 @@ export const RoundsList = ({
             guessed_country: guess.country,
             guessed_selector: guess.selector,
           })
-          .eq('id', existingGuess.id);
-
-        if (updateError) throw updateError;
+          .eq('player_id', playerId)
+          .eq('round_id', roundId);
+        error = updateError;
       } else {
         // Insert new guess
         const { error: insertError } = await supabase
@@ -121,9 +122,10 @@ export const RoundsList = ({
             guessed_country: guess.country,
             guessed_selector: guess.selector,
           });
-
-        if (insertError) throw insertError;
+        error = insertError;
       }
+
+      if (error) throw error;
 
       onGuessSubmitted(roundId, guess.country, guess.selector);
       
