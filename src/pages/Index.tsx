@@ -9,8 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const [name, setName] = useState('');
-  const [adminCode, setAdminCode] = useState('');
   const [sessionCode, setSessionCode] = useState('');
+  const [adminCode, setAdminCode] = useState('');
   const { addPlayer } = useGame();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -21,6 +21,15 @@ const Index = () => {
       toast({
         title: "Name required",
         description: "Please enter your name to join the tasting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isHost && !sessionCode.trim()) {
+      toast({
+        title: "Session code required",
+        description: "Please enter a session code for your tasting.",
         variant: "destructive",
       });
       return;
@@ -37,11 +46,14 @@ const Index = () => {
 
     try {
       if (isHost) {
-        // Create a new game session for the host
+        // Create a new game session with the host's chosen code
         const { data: sessionData, error: sessionError } = await supabase
           .from('game_sessions')
           .insert([
-            { host_id: name }
+            { 
+              id: sessionCode,
+              host_id: name 
+            }
           ])
           .select()
           .single();
@@ -53,7 +65,7 @@ const Index = () => {
           .from('game_players')
           .insert([
             {
-              session_id: sessionData.id,
+              session_id: sessionCode,
               player_name: name,
               is_host: true
             }
@@ -62,7 +74,7 @@ const Index = () => {
         if (playerError) throw playerError;
 
         addPlayer(name, true);
-        navigate(`/host-lobby/${sessionData.id}`);
+        navigate(`/host-lobby/${sessionCode}`);
       } else {
         // Verify session exists
         const { data: sessionData, error: sessionError } = await supabase
@@ -136,6 +148,19 @@ const Index = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
+                Session Code
+              </label>
+              <Input
+                type="text"
+                placeholder={isHost ? "Create a session code" : "Enter the session code to join"}
+                value={sessionCode}
+                onChange={(e) => setSessionCode(e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Host Code (optional)
               </label>
               <Input
@@ -146,21 +171,6 @@ const Index = () => {
                 className="w-full"
               />
             </div>
-
-            {!isHost && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Session Code
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Enter the session code to join"
-                  value={sessionCode}
-                  onChange={(e) => setSessionCode(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-            )}
 
             <Button 
               onClick={handleJoin}
