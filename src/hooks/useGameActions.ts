@@ -6,13 +6,20 @@ export function useGameActions(sessionId: string) {
 
   const endGame = async () => {
     try {
+      console.log('Ending game for session:', sessionId);
+      
+      // Update game session status to ended
       const { error: sessionError } = await supabase
         .from('game_sessions')
         .update({ status: 'ended' })
         .eq('id', sessionId);
 
-      if (sessionError) throw sessionError;
+      if (sessionError) {
+        console.error('Error ending game:', sessionError);
+        throw sessionError;
+      }
 
+      // Update gameState in the component
       toast({
         title: "Game Ended",
         description: "The game has been ended. Check the scores!",

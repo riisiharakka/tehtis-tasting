@@ -38,7 +38,34 @@ const GameScreen = () => {
     };
 
     fetchPlayerId();
-  }, [sessionId, currentPlayer?.name]);
+
+    // Subscribe to game session status changes
+    const channel = supabase
+      .channel(`game_${sessionId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'game_sessions',
+          filter: `id=eq.${sessionId}`,
+        },
+        (payload: any) => {
+          console.log('Game session update:', payload);
+          if (payload.new.status === 'ended') {
+            setGameState(prev => ({
+              ...prev,
+              isGameEnded: true
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionId, currentPlayer?.name, setGameState]);
 
   const handleGuessSubmitted = (roundId: string, country: string, selector: string) => {
     console.log('Submitting guess with:', { roundId, playerId, country, selector });
