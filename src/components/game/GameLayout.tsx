@@ -1,7 +1,9 @@
+import { useEffect, useState } from 'react';
 import { PlayerList } from './PlayerList';
 import { RoundsList } from './RoundsList';
 import { ScoresScreen } from './ScoresScreen';
-import type { Player, Round } from '@/types/game';
+import { supabase } from '@/integrations/supabase/client';
+import type { Player, Round, PlayerGuess } from '@/types/game';
 
 type GameLayoutProps = {
   gameState: {
@@ -22,12 +24,42 @@ export const GameLayout = ({
   onEndGame,
   onGuessSubmitted,
 }: GameLayoutProps) => {
+  const [playerGuesses, setPlayerGuesses] = useState<Record<string, { country: string; selector: string; }>>({});
+
+  useEffect(() => {
+    const fetchPlayerGuesses = async () => {
+      if (!gameState.isGameEnded) return;
+
+      const { data: guesses, error } = await supabase
+        .from('player_guesses')
+        .select('*')
+        .in('round_id', gameState.rounds.map(r => r.id));
+
+      if (error) {
+        console.error('Error fetching player guesses:', error);
+        return;
+      }
+
+      const formattedGuesses = (guesses as PlayerGuess[]).reduce((acc, guess) => {
+        acc[`${guess.player_id}-${guess.round_id}`] = {
+          country: guess.guessed_country,
+          selector: guess.guessed_selector,
+        };
+        return acc;
+      }, {} as Record<string, { country: string; selector: string; }>);
+
+      setPlayerGuesses(formattedGuesses);
+    };
+
+    fetchPlayerGuesses();
+  }, [gameState.isGameEnded, gameState.rounds]);
+
   if (gameState.isGameEnded) {
     return (
       <ScoresScreen
         players={gameState.players}
         rounds={gameState.rounds}
-        playerGuesses={{}} // We'll need to implement this
+        playerGuesses={playerGuesses}
       />
     );
   }
