@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Flag } from 'lucide-react';
 
 type PlayerGuessFormProps = {
   roundId: string;
@@ -64,32 +65,54 @@ export const PlayerGuessForm = ({ roundId, playerId, onSubmit }: PlayerGuessForm
               <SelectValue placeholder="Select country" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="France">France</SelectItem>
-              <SelectItem value="Italy">Italy</SelectItem>
-              <SelectItem value="Spain">Spain</SelectItem>
-              <SelectItem value="Germany">Germany</SelectItem>
-              <SelectItem value="Portugal">Portugal</SelectItem>
-              <SelectItem value="USA">USA</SelectItem>
-              <SelectItem value="Argentina">Argentina</SelectItem>
-              <SelectItem value="Chile">Chile</SelectItem>
-              <SelectItem value="Australia">Australia</SelectItem>
-              <SelectItem value="South Africa">South Africa</SelectItem>
+              {[
+                'France',
+                'Italy',
+                'Spain',
+                'Germany',
+                'Portugal',
+                'USA',
+                'Argentina',
+                'Chile',
+                'Australia',
+                'South Africa',
+              ].map((countryName) => (
+                <SelectItem key={countryName} value={countryName}>
+                  <div className="flex items-center gap-2">
+                    <Flag className="w-4 h-4 text-wine" />
+                    {countryName}
+                  </div>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
           <Label>Selected By</Label>
-          <RadioGroup value={selector} onValueChange={setSelector}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="Harri" id="harri" />
-              <Label htmlFor="harri">Harri</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="Silja" id="silja" />
-              <Label htmlFor="silja">Silja</Label>
-            </div>
-          </RadioGroup>
+          <div className="grid grid-cols-2 gap-4">
+            {['Harri', 'Silja'].map((name) => (
+              <div
+                key={name}
+                className={`
+                  p-4 rounded-lg border-2 cursor-pointer transition-all
+                  ${selector === name 
+                    ? 'border-wine bg-wine/10 shadow-md' 
+                    : 'border-gray-200 hover:border-wine/50'}
+                `}
+                onClick={() => setSelector(name)}
+              >
+                <RadioGroup value={selector} onValueChange={setSelector}>
+                  <div className="flex items-center justify-center space-x-2">
+                    <RadioGroupItem value={name} id={name.toLowerCase()} />
+                    <Label htmlFor={name.toLowerCase()} className="cursor-pointer">
+                      {name}
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
