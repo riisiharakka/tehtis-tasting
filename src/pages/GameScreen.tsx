@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Timer, Wine, Trophy } from 'lucide-react';
 import { useGame } from '@/contexts/GameContext';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { Database } from '@/integrations/supabase/types';
 
 type GameState = {
   currentWine: number;
@@ -34,8 +36,11 @@ const GameScreen = () => {
           table: 'game_sessions',
           filter: `id=eq.${sessionId}`,
         },
-        (payload) => {
-          if (payload.new.status === 'completed') {
+        (payload: RealtimePostgresChangesPayload<{
+          [key: string]: any;
+        }>) => {
+          const newData = payload.new as Database['public']['Tables']['game_sessions']['Row'];
+          if (newData.status === 'completed') {
             toast({
               title: "Round Complete!",
               description: "The tasting session has ended.",
