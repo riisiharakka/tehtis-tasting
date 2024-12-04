@@ -19,7 +19,7 @@ const GameScreen = () => {
   return (
     <GameLayout
       gameState={gameState}
-      isHost={isHost}
+      isHost={!!isHost}
       playerId={currentPlayer?.id || ''}
       onEndGame={endGame}
       onGuessSubmitted={handleGuessSubmitted}
