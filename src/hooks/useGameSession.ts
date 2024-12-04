@@ -64,43 +64,34 @@ export const useGameSession = (sessionId: string) => {
     };
 
     const setupRealtimeSubscription = () => {
-      channel = supabase
-        .channel(`game_${sessionId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'game_sessions',
-            filter: `id=eq.${sessionId}`,
-          },
-          (payload: {
-            new: Database['public']['Tables']['game_sessions']['Row'];
-          }) => {
-            if (payload.new.status === 'in_progress') {
-              navigate(`/game/${sessionId}`);
-            }
+      channel = supabase.channel(`game_${sessionId}`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'game_sessions',
+          filter: `id=eq.${sessionId}`,
+        }, (payload) => {
+          const newData = payload.new as Database['public']['Tables']['game_sessions']['Row'];
+          if (newData.status === 'in_progress') {
+            navigate(`/game/${sessionId}`);
           }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'game_players',
-            filter: `session_id=eq.${sessionId}`,
-          },
-          (payload) => {
-            if (payload.eventType === 'INSERT') {
-              setPlayers((current) => [...current, payload.new as Player]);
-            } else if (payload.eventType === 'DELETE') {
-              setPlayers((current) =>
-                current.filter((player) => player.id !== payload.old.id)
-              );
-            }
+        })
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'game_players',
+          filter: `session_id=eq.${sessionId}`,
+        }, (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setPlayers((current) => [...current, payload.new as Player]);
+          } else if (payload.eventType === 'DELETE') {
+            setPlayers((current) =>
+              current.filter((player) => player.id !== payload.old.id)
+            );
           }
-        )
-        .subscribe();
+        });
+
+      channel.subscribe();
     };
 
     fetchSessionData();
