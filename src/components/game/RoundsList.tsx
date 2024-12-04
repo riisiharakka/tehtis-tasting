@@ -26,37 +26,75 @@ export const RoundsList = ({
   const handleSubmit = async (roundId: string) => {
     const guess = guesses[roundId];
     if (guess) {
-      // Check if a guess already exists
-      const { data: existingGuess } = await supabase
-        .from('player_guesses')
-        .select('id')
-        .eq('player_id', playerId)
-        .eq('round_id', roundId)
-        .single();
-
-      if (existingGuess) {
-        // Update existing guess
-        const { error } = await supabase
+      try {
+        // Check if a guess already exists
+        const { data: existingGuess, error } = await supabase
           .from('player_guesses')
-          .update({
-            guessed_country: guess.country,
-            guessed_selector: guess.selector,
-          })
-          .eq('id', existingGuess.id);
+          .select('id')
+          .eq('player_id', playerId)
+          .eq('round_id', roundId)
+          .maybeSingle(); // Using maybeSingle() instead of single()
 
-        if (error) {
+        if (error && error.code !== 'PGRST116') {
+          // Only show error toast for errors other than "no rows returned"
           toast({
-            title: "Error updating guess",
-            description: "There was a problem updating your guess.",
+            title: "Error checking existing guess",
+            description: "There was a problem checking your existing guess.",
             variant: "destructive",
           });
           return;
         }
-      }
 
-      onGuessSubmitted(roundId, guess.country, guess.selector);
-      if (currentRoundIndex < rounds.length - 1) {
-        setCurrentRoundIndex(prev => prev + 1);
+        if (existingGuess) {
+          // Update existing guess
+          const { error: updateError } = await supabase
+            .from('player_guesses')
+            .update({
+              guessed_country: guess.country,
+              guessed_selector: guess.selector,
+            })
+            .eq('id', existingGuess.id);
+
+          if (updateError) {
+            toast({
+              title: "Error updating guess",
+              description: "There was a problem updating your guess.",
+              variant: "destructive",
+            });
+            return;
+          }
+        } else {
+          // Insert new guess
+          const { error: insertError } = await supabase
+            .from('player_guesses')
+            .insert({
+              player_id: playerId,
+              round_id: roundId,
+              guessed_country: guess.country,
+              guessed_selector: guess.selector,
+            });
+
+          if (insertError) {
+            toast({
+              title: "Error submitting guess",
+              description: "There was a problem submitting your guess.",
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+
+        onGuessSubmitted(roundId, guess.country, guess.selector);
+        if (currentRoundIndex < rounds.length - 1) {
+          setCurrentRoundIndex(prev => prev + 1);
+        }
+      } catch (error) {
+        console.error('Error handling guess submission:', error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred.",
+          variant: "destructive",
+        });
       }
     }
   };
