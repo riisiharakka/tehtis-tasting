@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useGame } from '@/contexts/GameContext';
@@ -16,6 +16,7 @@ type Player = {
 
 const GameScreen = () => {
   const { sessionId } = useParams();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { currentRound, currentPlayer } = useGame();
   const [gameState, setGameState] = useState({
@@ -27,6 +28,29 @@ const GameScreen = () => {
   const isHost = currentPlayer?.isAdmin;
 
   useEffect(() => {
+    const fetchGameData = async () => {
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('game_sessions')
+        .select('status')
+        .eq('id', sessionId)
+        .single();
+
+      if (sessionError || !sessionData) {
+        toast({
+          title: "Error fetching session",
+          description: "Could not load the game session.",
+          variant: "destructive",
+        });
+        navigate('/');
+        return;
+      }
+
+      if (sessionData.status === 'waiting') {
+        navigate(`/waiting`);
+        return;
+      }
+    };
+
     const fetchPlayers = async () => {
       const { data, error } = await supabase
         .from('game_players')
@@ -49,6 +73,7 @@ const GameScreen = () => {
       }));
     };
 
+    fetchGameData();
     fetchPlayers();
 
     const channel = supabase
@@ -63,11 +88,16 @@ const GameScreen = () => {
         },
         (payload) => {
           const newData = payload.new as Database['public']['Tables']['game_sessions']['Row'];
-          if (newData.status === 'completed') {
-            toast({
-              title: "Round Complete!",
-              description: "The tasting session has ended.",
-            });
+          if (newData.status === 'tasting') {
+            setGameState(prev => ({
+              ...prev,
+              isGuessing: true,
+            }));
+          } else if (newData.status === 'paused') {
+            setGameState(prev => ({
+              ...prev,
+              isGuessing: false,
+            }));
           }
         }
       )
@@ -76,7 +106,7 @@ const GameScreen = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessionId, toast]);
+  }, [sessionId, toast, navigate]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;

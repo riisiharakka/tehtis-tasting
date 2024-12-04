@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, Play, Copy } from 'lucide-react';
+import { useGame } from '@/contexts/GameContext';
 
 type Player = {
   id: string;
@@ -17,13 +18,13 @@ const HostLobby = () => {
   const [sessionCode, setSessionCode] = useState<string>('');
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { startRound: startGameRound } = useGame();
 
   useEffect(() => {
-    // Fetch session code and players
     const fetchSessionData = async () => {
       const { data: sessionData, error: sessionError } = await supabase
         .from('game_sessions')
-        .select('code')
+        .select('code, status')
         .eq('id', sessionId)
         .single();
 
@@ -38,6 +39,9 @@ const HostLobby = () => {
 
       if (sessionData) {
         setSessionCode(sessionData.code);
+        if (sessionData.status === 'in_progress') {
+          navigate(`/game/${sessionId}`);
+        }
       }
     };
 
@@ -63,9 +67,23 @@ const HostLobby = () => {
     fetchSessionData();
     fetchPlayers();
 
-    // Subscribe to realtime updates
+    // Subscribe to realtime updates for both game_sessions and game_players
     const channel = supabase
-      .channel('game_players_changes')
+      .channel(`game_${sessionId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'game_sessions',
+          filter: `id=eq.${sessionId}`,
+        },
+        (payload) => {
+          if (payload.new.status === 'in_progress') {
+            navigate(`/game/${sessionId}`);
+          }
+        }
+      )
       .on(
         'postgres_changes',
         {
@@ -89,7 +107,7 @@ const HostLobby = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessionId, toast]);
+  }, [sessionId, toast, navigate]);
 
   const copySessionCode = async () => {
     await navigator.clipboard.writeText(sessionCode);
@@ -116,6 +134,8 @@ const HostLobby = () => {
         .eq('id', sessionId);
 
       if (error) throw error;
+
+      startGameRound(1); // Start round 1
 
       toast({
         title: "Round started!",
