@@ -65,6 +65,83 @@ export type Database = {
         }
         Relationships: []
       }
+      player_guesses: {
+        Row: {
+          created_at: string
+          guessed_country: string
+          guessed_selector: string
+          id: string
+          player_id: string
+          round_id: string
+        }
+        Insert: {
+          created_at?: string
+          guessed_country: string
+          guessed_selector: string
+          id?: string
+          player_id: string
+          round_id: string
+        }
+        Update: {
+          created_at?: string
+          guessed_country?: string
+          guessed_selector?: string
+          id?: string
+          player_id?: string
+          round_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_guesses_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "game_players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_guesses_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rounds: {
+        Row: {
+          correct_country: string
+          created_at: string
+          id: string
+          round_number: number
+          session_id: string
+          wine_selector: string
+        }
+        Insert: {
+          correct_country: string
+          created_at?: string
+          id?: string
+          round_number: number
+          session_id: string
+          wine_selector: string
+        }
+        Update: {
+          correct_country?: string
+          created_at?: string
+          id?: string
+          round_number?: number
+          session_id?: string
+          wine_selector?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rounds_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

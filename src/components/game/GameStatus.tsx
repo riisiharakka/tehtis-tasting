@@ -19,8 +19,6 @@ export const GameStatus = ({
   onPauseGuessing,
   isHost,
 }: GameStatusProps) => {
-  const { currentRound } = useGame();
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -32,11 +30,9 @@ export const GameStatus = ({
       <div className="text-center mb-6">
         <Wine className="w-12 h-12 text-wine mx-auto mb-2" />
         <h1 className="text-2xl font-serif text-wine">Wine Tasting</h1>
-        {currentRound && (
-          <p className="text-gray-600 mt-2">
-            Round {currentRound.number} - Wine {currentWine}
-          </p>
-        )}
+        <p className="text-gray-600 mt-2">
+          Round {currentWine} of 6
+        </p>
       </div>
 
       <div className="space-y-6">
@@ -55,7 +51,7 @@ export const GameStatus = ({
                 className="w-full bg-wine hover:bg-wine-light text-white"
               >
                 <Play className="w-4 h-4 mr-2" />
-                Start Tasting Wine {currentWine}
+                Start Round {currentWine}
               </Button>
             ) : (
               <Button
@@ -63,7 +59,7 @@ export const GameStatus = ({
                 className="w-full bg-gold hover:bg-gold-light text-white"
               >
                 <Pause className="w-4 h-4 mr-2" />
-                Pause Tasting
+                Pause Round
               </Button>
             )}
           </div>
