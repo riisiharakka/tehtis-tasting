@@ -41,7 +41,7 @@
 
 /* Toast customization */
 [role="status"][data-state="open"] {
-  @apply bg-background/95 backdrop-blur border shadow-lg;
+  @apply bg-background/80 backdrop-blur border shadow-lg;
 }
 
 [role="status"] [data-state="closed"] {
