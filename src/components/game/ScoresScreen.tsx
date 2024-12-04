@@ -1,5 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trophy, Medal, Check, X } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { Player, Round } from '@/types/game';
 
 type PlayerScore = {
@@ -61,90 +62,100 @@ export const ScoresScreen = ({ players, rounds, playerGuesses }: ScoresScreenPro
           </div>
 
           <div className="mb-8">
-            <h2 className="text-xl font-serif text-wine mb-4">Round by Round Comparison</h2>
-            <div className="space-y-6">
-              {players.map(player => (
-                <div key={player.id} className="bg-cream/50 p-4 rounded-lg">
-                  <h3 className="font-bold mb-3">{player.player_name}'s Answers</h3>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Round</TableHead>
-                        <TableHead>Correct Country</TableHead>
-                        <TableHead>Your Guess</TableHead>
-                        <TableHead>Correct Selector</TableHead>
-                        <TableHead>Your Guess</TableHead>
-                        <TableHead className="text-right">Points</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {rounds.map(round => {
-                        const guess = playerGuesses[`${player.id}-${round.id}`];
-                        const countryCorrect = guess?.country === round.correct_country;
-                        const selectorCorrect = guess?.selector === round.wine_selector;
-                        const roundPoints = (countryCorrect ? 1 : 0) + (selectorCorrect ? 1 : 0);
-
-                        return (
-                          <TableRow key={round.id}>
-                            <TableCell>{round.round_number}</TableCell>
-                            <TableCell className="flex items-center gap-2">
-                              {round.correct_country}
-                              {countryCorrect ? (
-                                <Check className="w-4 h-4 text-green-500" />
-                              ) : (
-                                <X className="w-4 h-4 text-red-500" />
-                              )}
-                            </TableCell>
-                            <TableCell>{guess?.country || '-'}</TableCell>
-                            <TableCell className="flex items-center gap-2">
-                              {round.wine_selector}
-                              {selectorCorrect ? (
-                                <Check className="w-4 h-4 text-green-500" />
-                              ) : (
-                                <X className="w-4 h-4 text-red-500" />
-                              )}
-                            </TableCell>
-                            <TableCell>{guess?.selector || '-'}</TableCell>
-                            <TableCell className="text-right font-bold">{roundPoints}</TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-              ))}
-            </div>
+            <h2 className="text-xl font-serif text-wine mb-4">Final Scores</h2>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Rank</TableHead>
+                  <TableHead>Player</TableHead>
+                  <TableHead className="text-right">Total Score</TableHead>
+                  <TableHead className="text-right">Correct Countries</TableHead>
+                  <TableHead className="text-right">Correct Selectors</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {scores.map((score, index) => (
+                  <TableRow key={score.player.id}>
+                    <TableCell className="font-medium">
+                      {index === 0 ? (
+                        <Medal className="w-5 h-5 text-gold" />
+                      ) : (
+                        `#${index + 1}`
+                      )}
+                    </TableCell>
+                    <TableCell>{score.player.player_name}</TableCell>
+                    <TableCell className="text-right font-bold">{score.totalScore}</TableCell>
+                    <TableCell className="text-right">{score.correctCountries}</TableCell>
+                    <TableCell className="text-right">{score.correctSelectors}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
 
-          <h2 className="text-xl font-serif text-wine mb-4">Final Scores</h2>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Rank</TableHead>
-                <TableHead>Player</TableHead>
-                <TableHead className="text-right">Total Score</TableHead>
-                <TableHead className="text-right">Correct Countries</TableHead>
-                <TableHead className="text-right">Correct Selectors</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {scores.map((score, index) => (
-                <TableRow key={score.player.id}>
-                  <TableCell className="font-medium">
-                    {index === 0 ? (
-                      <Medal className="w-5 h-5 text-gold" />
-                    ) : (
-                      `#${index + 1}`
-                    )}
-                  </TableCell>
-                  <TableCell>{score.player.player_name}</TableCell>
-                  <TableCell className="text-right font-bold">{score.totalScore}</TableCell>
-                  <TableCell className="text-right">{score.correctCountries}</TableCell>
-                  <TableCell className="text-right">{score.correctSelectors}</TableCell>
-                </TableRow>
+          <div>
+            <h2 className="text-xl font-serif text-wine mb-4">Round by Round Comparison</h2>
+            <Accordion type="single" collapsible className="space-y-4">
+              {players.map(player => (
+                <AccordionItem 
+                  key={player.id} 
+                  value={player.id}
+                  className="bg-cream/50 px-4 rounded-lg border-none"
+                >
+                  <AccordionTrigger className="hover:no-underline py-4">
+                    <h3 className="font-bold">{player.player_name}'s Answers</h3>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Round</TableHead>
+                          <TableHead>Correct Country</TableHead>
+                          <TableHead>Your Guess</TableHead>
+                          <TableHead>Correct Selector</TableHead>
+                          <TableHead>Your Guess</TableHead>
+                          <TableHead className="text-right">Points</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {rounds.map(round => {
+                          const guess = playerGuesses[`${player.id}-${round.id}`];
+                          const countryCorrect = guess?.country === round.correct_country;
+                          const selectorCorrect = guess?.selector === round.wine_selector;
+                          const roundPoints = (countryCorrect ? 1 : 0) + (selectorCorrect ? 1 : 0);
+
+                          return (
+                            <TableRow key={round.id}>
+                              <TableCell>{round.round_number}</TableCell>
+                              <TableCell className="flex items-center gap-2">
+                                {round.correct_country}
+                                {countryCorrect ? (
+                                  <Check className="w-4 h-4 text-green-500" />
+                                ) : (
+                                  <X className="w-4 h-4 text-red-500" />
+                                )}
+                              </TableCell>
+                              <TableCell>{guess?.country || '-'}</TableCell>
+                              <TableCell className="flex items-center gap-2">
+                                {round.wine_selector}
+                                {selectorCorrect ? (
+                                  <Check className="w-4 h-4 text-green-500" />
+                                ) : (
+                                  <X className="w-4 h-4 text-red-500" />
+                                )}
+                              </TableCell>
+                              <TableCell>{guess?.selector || '-'}</TableCell>
+                              <TableCell className="text-right font-bold">{roundPoints}</TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </TableBody>
-          </Table>
+            </Accordion>
+          </div>
         </div>
       </div>
     </div>
