@@ -54,9 +54,15 @@ const GameScreen = () => {
         return;
       }
 
+      // Update game state based on session status
       if (sessionData.status === 'waiting') {
         navigate(`/waiting`);
         return;
+      } else if (sessionData.status === 'tasting') {
+        setGameState(prev => ({
+          ...prev,
+          isGuessing: true
+        }));
       }
     };
 
@@ -111,6 +117,7 @@ const GameScreen = () => {
           filter: `id=eq.${sessionId}`,
         },
         (payload) => {
+          console.log('Game session update in GameScreen:', payload);
           const newData = payload.new as Database['public']['Tables']['game_sessions']['Row'];
           if (newData.status === 'tasting') {
             setGameState(prev => ({
@@ -153,7 +160,9 @@ const GameScreen = () => {
           fetchPlayers();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('GameScreen subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);

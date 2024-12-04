@@ -28,8 +28,12 @@ export function useRealtimeSubscription(
             filter: `id=eq.${sessionId}`,
           },
           (payload) => {
+            console.log('Game session update:', payload);
             const newData = payload.new as Database['public']['Tables']['game_sessions']['Row'];
-            if (newData.status === 'in_progress') {
+            
+            // Redirect to game screen when status changes to in_progress or tasting
+            if (newData.status === 'in_progress' || newData.status === 'tasting') {
+              console.log('Redirecting to game screen');
               navigate(`/game/${sessionId}`);
             }
           }
@@ -43,6 +47,7 @@ export function useRealtimeSubscription(
             filter: `session_id=eq.${sessionId}`,
           },
           (payload) => {
+            console.log('Player update:', payload);
             if (payload.eventType === 'INSERT') {
               setPlayers((current) => [...current, payload.new as Player]);
             } else if (payload.eventType === 'DELETE') {
@@ -53,13 +58,16 @@ export function useRealtimeSubscription(
           }
         );
 
-      await channel.subscribe();
+      await channel.subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
     };
 
     setupRealtimeSubscription();
 
     return () => {
       if (channel) {
+        console.log('Cleaning up realtime subscription');
         void supabase.removeChannel(channel);
       }
     };
