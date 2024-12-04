@@ -63,7 +63,7 @@
   right: 0;
   height: 3px;
   background-color: hsl(var(--primary));
-  animation: progress 3000ms linear;
+  animation: progress 3500ms linear;
   transform-origin: left;
 }
 
