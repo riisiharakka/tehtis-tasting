@@ -45,6 +45,10 @@ export const PlayerGuessForm = ({ roundId, playerId, onSubmit }: PlayerGuessForm
         description: "Your guess has been recorded.",
       });
       
+      // Reset form fields after successful submission
+      setCountry('');
+      setSelector('');
+      
       onSubmit();
     } catch (error) {
       toast({
