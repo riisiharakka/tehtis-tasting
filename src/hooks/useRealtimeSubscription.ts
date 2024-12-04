@@ -31,9 +31,9 @@ export function useRealtimeSubscription(
             console.log('Game session update in subscription:', payload);
             const newData = payload.new as Database['public']['Tables']['game_sessions']['Row'];
             
-            // Redirect to game screen when status changes to in_progress
-            if (newData.status === 'in_progress') {
-              console.log('Status changed to in_progress, redirecting to game screen');
+            // Redirect to game screen when status changes to in_progress or tasting
+            if (newData.status === 'in_progress' || newData.status === 'tasting') {
+              console.log('Status changed, redirecting to game screen');
               navigate(`/game/${sessionId}`);
             }
           }

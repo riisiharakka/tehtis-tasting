@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useGame } from '@/contexts/GameContext';
 import { PlayerList } from '@/components/game/PlayerList';
 import { GameStatus } from '@/components/game/GameStatus';
-import { GuessForm } from '@/components/game/GuessForm';
+import { PlayerGuessForm } from '@/components/game/PlayerGuessForm';
 import type { Database } from '@/integrations/supabase/types';
 
 type Player = {
@@ -36,6 +36,8 @@ const GameScreen = () => {
 
   useEffect(() => {
     const fetchGameData = async () => {
+      if (!sessionId) return;
+
       console.log('Fetching game data for session:', sessionId);
       const { data: sessionData, error: sessionError } = await supabase
         .from('game_sessions')
@@ -67,15 +69,17 @@ const GameScreen = () => {
     };
 
     const fetchPlayers = async () => {
+      if (!sessionId) return;
+
       console.log('Fetching players for session:', sessionId);
-      const { data: playersData, error: playersError } = await supabase
+      const { data, error } = await supabase
         .from('game_players')
         .select('*')
         .eq('session_id', sessionId)
         .order('joined_at', { ascending: true });
 
-      if (playersError) {
-        console.error('Error fetching players:', playersError);
+      if (error) {
+        console.error('Error fetching players:', error);
         toast({
           title: "Error fetching players",
           description: "Could not load the player list.",
@@ -97,7 +101,7 @@ const GameScreen = () => {
 
       setGameState(prev => ({
         ...prev,
-        players: playersData || [],
+        players: data || [],
         currentRound: roundData?.[0] || null,
         currentWine: roundData?.[0]?.round_number || 1,
       }));
@@ -300,7 +304,7 @@ const GameScreen = () => {
             />
             {gameState.isGuessing && gameState.currentRound && !isHost && (
               <div className="bg-white p-6 rounded-lg shadow-lg">
-                <GuessForm
+                <PlayerGuessForm
                   roundId={gameState.currentRound.id}
                   playerId={currentPlayer?.id || ''}
                   onSubmit={handleGuessSubmitted}
