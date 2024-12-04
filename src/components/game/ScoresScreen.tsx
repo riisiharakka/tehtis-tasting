@@ -65,9 +65,9 @@ export const ScoresScreen = ({ players, rounds, playerGuesses }: ScoresScreenPro
               <TableRow>
                 <TableHead>Rank</TableHead>
                 <TableHead>Player</TableHead>
+                <TableHead className="text-right">Total Score</TableHead>
                 <TableHead className="text-right">Correct Countries</TableHead>
                 <TableHead className="text-right">Correct Selectors</TableHead>
-                <TableHead className="text-right">Total Score</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -81,9 +81,9 @@ export const ScoresScreen = ({ players, rounds, playerGuesses }: ScoresScreenPro
                     )}
                   </TableCell>
                   <TableCell>{score.player.player_name}</TableCell>
+                  <TableCell className="text-right font-bold">{score.totalScore}</TableCell>
                   <TableCell className="text-right">{score.correctCountries}</TableCell>
                   <TableCell className="text-right">{score.correctSelectors}</TableCell>
-                  <TableCell className="text-right font-bold">{score.totalScore}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
