@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { Player } from '@/types/game';
 
-export const useSessionData = (
+export function useSessionData(
   sessionId: string,
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>,
   setSessionCode: React.Dispatch<React.SetStateAction<string>>
-) => {
+) {
   const { toast } = useToast();
 
   useEffect(() => {
@@ -54,4 +54,4 @@ export const useSessionData = (
     fetchSessionData();
     fetchPlayers();
   }, [sessionId, setSessionCode, setPlayers, toast]);
-};
+}

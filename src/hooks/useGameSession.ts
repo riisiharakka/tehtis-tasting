@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRealtimeSubscription } from './useRealtimeSubscription';
 import { useSessionData } from './useSessionData';
 import type { Player } from '@/types/game';
 
-export const useGameSession = (sessionId: string) => {
+export function useGameSession(sessionId: string) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [sessionCode, setSessionCode] = useState<string>('');
 
@@ -14,4 +14,4 @@ export const useGameSession = (sessionId: string) => {
     players,
     sessionCode,
   };
-};
+}
