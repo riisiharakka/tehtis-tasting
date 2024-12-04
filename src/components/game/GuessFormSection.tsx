@@ -8,7 +8,7 @@ type GuessFormSectionProps = {
     round_number: number;
   };
   guesses: Record<string, { country: string; selector: string }>;
-  setGuesses: (value: Record<string, { country: string; selector: string }>) => void;
+  setGuesses: React.Dispatch<React.SetStateAction<Record<string, { country: string; selector: string }>>>;
   onSubmit: () => void;
   onBack?: () => void;
   showBackButton?: boolean;
