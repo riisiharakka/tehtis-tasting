@@ -54,6 +54,19 @@
   @apply opacity-70 hover:opacity-100 transition-opacity;
 }
 
+/* Toast progress bar */
+[role="status"]::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: hsl(var(--primary));
+  animation: progress 2s linear;
+  transform-origin: left;
+}
+
 /* Toast animations */
 @keyframes slideIn {
   from {
@@ -72,5 +85,14 @@
   }
   to {
     opacity: 0;
+  }
+}
+
+@keyframes progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
   }
 }
