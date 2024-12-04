@@ -72,6 +72,7 @@ export const PlayerGuessForm = ({ roundId, playerId, onSubmit }: PlayerGuessForm
               {[
                 'Australia',
                 'Chile',
+                'Finland',
                 'France',
                 'Germany',
                 'Italy',
