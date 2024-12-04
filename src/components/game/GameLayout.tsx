@@ -74,20 +74,12 @@ export const GameLayout = ({
               playerId={playerId}
               onGuessSubmitted={onGuessSubmitted}
               isGameEnded={gameState.isGameEnded}
+              isHost={isHost}
+              onEndGame={onEndGame}
             />
           </div>
-          <div className="space-y-6">
+          <div>
             <PlayerList players={gameState.players} />
-            {isHost && !gameState.isGameEnded && (
-              <div className="bg-white p-6 rounded-lg shadow-lg">
-                <button
-                  onClick={onEndGame}
-                  className="w-full bg-wine hover:bg-wine/90 text-white py-2 px-4 rounded-lg"
-                >
-                  End Game & Show Scores
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
