@@ -16,20 +16,16 @@ const Index = () => {
   const navigate = useNavigate();
   const isHost = adminCode === '1234';
 
+  const generateSessionCode = () => {
+    // Generate a 6-character alphanumeric code
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+  };
+
   const handleJoin = async () => {
     if (!name.trim()) {
       toast({
         title: "Name required",
         description: "Please enter your name to join the tasting.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (isHost && !sessionCode.trim()) {
-      toast({
-        title: "Session code required",
-        description: "Please enter a session code for your tasting.",
         variant: "destructive",
       });
       return;
@@ -46,13 +42,15 @@ const Index = () => {
 
     try {
       if (isHost) {
+        const generatedCode = isHost ? generateSessionCode() : sessionCode;
+        
         // Create a new game session with the host's chosen code
         const { data: sessionData, error: sessionError } = await supabase
           .from('game_sessions')
           .insert([
             { 
-              id: sessionCode,
-              host_id: name 
+              host_id: name,
+              code: generatedCode
             }
           ])
           .select()
@@ -65,7 +63,7 @@ const Index = () => {
           .from('game_players')
           .insert([
             {
-              session_id: sessionCode,
+              session_id: sessionData.id,
               player_name: name,
               is_host: true
             }
@@ -74,13 +72,13 @@ const Index = () => {
         if (playerError) throw playerError;
 
         addPlayer(name, true);
-        navigate(`/host-lobby/${sessionCode}`);
+        navigate(`/host-lobby/${sessionData.id}`);
       } else {
         // Verify session exists
         const { data: sessionData, error: sessionError } = await supabase
           .from('game_sessions')
           .select('*')
-          .eq('id', sessionCode)
+          .eq('code', sessionCode)
           .single();
 
         if (sessionError || !sessionData) {
@@ -97,7 +95,7 @@ const Index = () => {
           .from('game_players')
           .insert([
             {
-              session_id: sessionCode,
+              session_id: sessionData.id,
               player_name: name,
               is_host: false
             }
@@ -114,6 +112,7 @@ const Index = () => {
         description: `Joined as ${isHost ? 'host' : 'guest'}: ${name}`,
       });
     } catch (error) {
+      console.error('Error joining session:', error);
       toast({
         title: "Error joining session",
         description: "There was a problem joining the session. Please try again.",
@@ -152,10 +151,11 @@ const Index = () => {
               </label>
               <Input
                 type="text"
-                placeholder={isHost ? "Create a session code" : "Enter the session code to join"}
+                placeholder={isHost ? "Will be generated automatically" : "Enter the session code to join"}
                 value={sessionCode}
                 onChange={(e) => setSessionCode(e.target.value)}
                 className="w-full"
+                disabled={isHost}
               />
             </div>
 
