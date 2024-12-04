@@ -25,10 +25,11 @@ export const GameLayout = ({
   onGuessSubmitted,
 }: GameLayoutProps) => {
   const [playerGuesses, setPlayerGuesses] = useState<Record<string, { country: string; selector: string; }>>({});
-  const [roundGuesses, setRoundGuesses] = useState<Record<string, { roundNumber: number }[]>>({});
 
   useEffect(() => {
     const fetchPlayerGuesses = async () => {
+      if (!gameState.isGameEnded) return;
+
       const { data: guesses, error } = await supabase
         .from('player_guesses')
         .select('*')
@@ -47,24 +48,11 @@ export const GameLayout = ({
         return acc;
       }, {} as Record<string, { country: string; selector: string; }>);
 
-      // Format guesses by player and round number
-      const roundGuessesMap = (guesses as PlayerGuess[]).reduce((acc, guess) => {
-        const round = gameState.rounds.find(r => r.id === guess.round_id);
-        if (!round) return acc;
-
-        if (!acc[guess.player_id]) {
-          acc[guess.player_id] = [];
-        }
-        acc[guess.player_id].push({ roundNumber: round.round_number });
-        return acc;
-      }, {} as Record<string, { roundNumber: number }[]>);
-
       setPlayerGuesses(formattedGuesses);
-      setRoundGuesses(roundGuessesMap);
     };
 
     fetchPlayerGuesses();
-  }, [gameState.rounds]);
+  }, [gameState.isGameEnded, gameState.rounds]);
 
   if (gameState.isGameEnded) {
     return (
@@ -86,16 +74,12 @@ export const GameLayout = ({
               playerId={playerId}
               onGuessSubmitted={onGuessSubmitted}
               isGameEnded={gameState.isGameEnded}
-            />
-          </div>
-          <div>
-            <PlayerList
-              players={gameState.players}
-              rounds={gameState.rounds.length}
-              playerGuesses={roundGuesses}
               isHost={isHost}
               onEndGame={onEndGame}
             />
+          </div>
+          <div>
+            <PlayerList players={gameState.players} />
           </div>
         </div>
       </div>

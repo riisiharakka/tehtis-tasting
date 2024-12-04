@@ -1,16 +1,11 @@
-import { Users, Trophy, Wine } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { Player } from '@/types/game';
+import { Users, Trophy } from 'lucide-react';
+import { Player } from '@/types/game';
 
 type PlayerListProps = {
   players: Player[];
-  rounds: number;
-  playerGuesses: Record<string, { roundNumber: number }[]>;
-  isHost?: boolean;
-  onEndGame?: () => void;
 };
 
-export const PlayerList = ({ players, rounds, playerGuesses, isHost, onEndGame }: PlayerListProps) => {
+export const PlayerList = ({ players }: PlayerListProps) => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">
       <div className="text-center mb-6">
@@ -27,50 +22,24 @@ export const PlayerList = ({ players, rounds, playerGuesses, isHost, onEndGame }
             {players.map((player) => (
               <li
                 key={player.id}
-                className="flex flex-col gap-2 py-2 px-3 bg-gray-50 rounded"
+                className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded"
               >
-                <div className="flex items-center justify-between">
-                  <span>{player.player_name}</span>
-                  <div className="flex items-center gap-2">
-                    {player.is_host && (
-                      <span className="text-xs bg-wine text-white px-2 py-1 rounded">
-                        Host
-                      </span>
-                    )}
-                    {player.hasSubmitted && (
-                      <Trophy className="w-4 h-4 text-gold" />
-                    )}
-                  </div>
-                </div>
-                <div className="flex gap-1">
-                  {Array.from({ length: rounds }).map((_, index) => {
-                    const hasSubmitted = playerGuesses[player.id]?.some(
-                      guess => guess.roundNumber === index + 1
-                    );
-                    return (
-                      <Wine
-                        key={index}
-                        className={`w-4 h-4 ${
-                          hasSubmitted ? 'text-wine' : 'text-gray-300'
-                        }`}
-                      />
-                    );
-                  })}
+                <span>{player.player_name}</span>
+                <div className="flex items-center gap-2">
+                  {player.is_host && (
+                    <span className="text-xs bg-wine text-white px-2 py-1 rounded">
+                      Host
+                    </span>
+                  )}
+                  {player.hasSubmitted && (
+                    <Trophy className="w-4 h-4 text-gold" />
+                  )}
                 </div>
               </li>
             ))}
           </ul>
         </div>
       </div>
-
-      {isHost && onEndGame && (
-        <Button
-          onClick={onEndGame}
-          className="w-full mt-4 bg-wine hover:bg-wine/90 text-white"
-        >
-          End Game & Show Scores
-        </Button>
-      )}
     </div>
   );
 };
