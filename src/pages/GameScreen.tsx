@@ -171,7 +171,7 @@ const GameScreen = () => {
   const startGuessing = async () => {
     if (isHost) {
       try {
-        // Create new round
+        // Create new round with explicit session_id
         const { data: newRound, error: roundError } = await supabase
           .from('rounds')
           .insert({
@@ -183,12 +183,25 @@ const GameScreen = () => {
           .select()
           .single();
 
-        if (roundError) throw roundError;
+        if (roundError) {
+          console.error('Error creating round:', roundError);
+          throw roundError;
+        }
 
-        await supabase
+        if (!newRound) {
+          throw new Error('No round data returned after creation');
+        }
+
+        // Update session status
+        const { error: sessionError } = await supabase
           .from('game_sessions')
           .update({ status: 'tasting' })
           .eq('id', sessionId);
+
+        if (sessionError) {
+          console.error('Error updating session status:', sessionError);
+          throw sessionError;
+        }
 
         setGameState(prev => ({
           ...prev,
@@ -201,6 +214,7 @@ const GameScreen = () => {
           description: `Round ${gameState.currentWine} has begun!`,
         });
       } catch (error) {
+        console.error('Error starting round:', error);
         toast({
           title: "Error",
           description: "Could not start the round.",

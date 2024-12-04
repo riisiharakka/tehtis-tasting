@@ -44,16 +44,14 @@ const Index = () => {
         const code = generateSessionCode();
         console.log('Creating new session with code:', code);
         
-        // Create a new game session
+        // Create a new game session with explicit insert
         const { data: sessionData, error: sessionError } = await supabase
           .from('game_sessions')
-          .insert([
-            { 
-              host_id: name,
-              code: code,
-              status: 'waiting'
-            }
-          ])
+          .insert({
+            host_id: name,
+            code: code,
+            status: 'waiting'
+          })
           .select()
           .single();
 
@@ -68,16 +66,14 @@ const Index = () => {
 
         console.log('Session created successfully:', sessionData);
 
-        // Add host to game_players
+        // Add host to game_players with explicit session_id
         const { error: playerError } = await supabase
           .from('game_players')
-          .insert([
-            {
-              session_id: sessionData.id,
-              player_name: name,
-              is_host: true
-            }
-          ]);
+          .insert({
+            session_id: sessionData.id,
+            player_name: name,
+            is_host: true
+          });
 
         if (playerError) {
           console.error('Error adding host to players:', playerError);
@@ -106,13 +102,11 @@ const Index = () => {
         // Add player to existing session
         const { error: playerError } = await supabase
           .from('game_players')
-          .insert([
-            {
-              session_id: sessionData.id,
-              player_name: name,
-              is_host: false
-            }
-          ]);
+          .insert({
+            session_id: sessionData.id,
+            player_name: name,
+            is_host: false
+          });
 
         if (playerError) {
           console.error('Error adding player:', playerError);
