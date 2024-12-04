@@ -1,29 +1,19 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { GameLayout } from '@/components/game/GameLayout';
-import { useGameLogic } from '@/hooks/useGameLogic';
+import { useGameState } from '@/hooks/useGameState';
+import { useGameActions } from '@/hooks/useGameActions';
 
 const GameScreen = () => {
   const { sessionId } = useParams();
   const { currentPlayer } = useGame();
   const isHost = currentPlayer?.isAdmin;
   
-  const {
-    gameState,
-    startGuessing,
-    pauseGuessing,
-    setGameState,
-  } = useGameLogic(sessionId!, isHost);
+  const { gameState, setGameState } = useGameState(sessionId!);
+  const { endGame, submitGuess } = useGameActions(sessionId!);
 
-  const handleGuessSubmitted = () => {
-    setGameState(prev => ({
-      ...prev,
-      players: prev.players.map(player => 
-        player.id === currentPlayer?.id 
-          ? { ...player, hasSubmitted: true }
-          : player
-      ),
-    }));
+  const handleGuessSubmitted = (roundId: string, country: string, selector: string) => {
+    submitGuess(roundId, currentPlayer?.id || '', country, selector);
   };
 
   return (
@@ -31,8 +21,7 @@ const GameScreen = () => {
       gameState={gameState}
       isHost={isHost}
       playerId={currentPlayer?.id || ''}
-      onStartGuessing={startGuessing}
-      onPauseGuessing={pauseGuessing}
+      onEndGame={endGame}
       onGuessSubmitted={handleGuessSubmitted}
     />
   );

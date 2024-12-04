@@ -1,55 +1,51 @@
 import { PlayerList } from './PlayerList';
-import { GameStatus } from './GameStatus';
-import { PlayerGuessForm } from './PlayerGuessForm';
+import { RoundsList } from './RoundsList';
 import type { Player, Round } from '@/types/game';
 
 type GameLayoutProps = {
   gameState: {
-    currentWine: number;
-    timeRemaining: number;
-    isGuessing: boolean;
     players: Player[];
-    currentRound: Round | null;
+    rounds: Round[];
+    isGameEnded: boolean;
   };
   isHost: boolean;
   playerId: string;
-  onStartGuessing: () => void;
-  onPauseGuessing: () => void;
-  onGuessSubmitted: () => void;
+  onEndGame: () => void;
+  onGuessSubmitted: (roundId: string, country: string, selector: string) => void;
 };
 
 export const GameLayout = ({
   gameState,
   isHost,
   playerId,
-  onStartGuessing,
-  onPauseGuessing,
+  onEndGame,
   onGuessSubmitted,
 }: GameLayoutProps) => {
   return (
     <div className="min-h-screen bg-cream p-4">
-      <div className="max-w-4xl mx-auto pt-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-6">
-            <GameStatus
-              timeRemaining={gameState.timeRemaining}
-              isGuessing={gameState.isGuessing}
-              currentWine={gameState.currentWine}
-              onStartGuessing={onStartGuessing}
-              onPauseGuessing={onPauseGuessing}
-              isHost={isHost}
+      <div className="max-w-6xl mx-auto pt-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <RoundsList
+              rounds={gameState.rounds}
+              playerId={playerId}
+              onGuessSubmitted={onGuessSubmitted}
+              isGameEnded={gameState.isGameEnded}
             />
-            {gameState.isGuessing && gameState.currentRound && !isHost && (
+          </div>
+          <div className="space-y-6">
+            <PlayerList players={gameState.players} />
+            {isHost && !gameState.isGameEnded && (
               <div className="bg-white p-6 rounded-lg shadow-lg">
-                <PlayerGuessForm
-                  roundId={gameState.currentRound.id}
-                  playerId={playerId}
-                  onSubmit={onGuessSubmitted}
-                />
+                <button
+                  onClick={onEndGame}
+                  className="w-full bg-wine hover:bg-wine/90 text-white py-2 px-4 rounded-lg"
+                >
+                  End Game & Show Scores
+                </button>
               </div>
             )}
           </div>
-          <PlayerList players={gameState.players} />
         </div>
       </div>
     </div>
