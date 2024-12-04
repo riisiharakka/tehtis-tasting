@@ -1,5 +1,6 @@
 import { PlayerList } from './PlayerList';
 import { RoundsList } from './RoundsList';
+import { ScoresScreen } from './ScoresScreen';
 import type { Player, Round } from '@/types/game';
 
 type GameLayoutProps = {
@@ -21,6 +22,16 @@ export const GameLayout = ({
   onEndGame,
   onGuessSubmitted,
 }: GameLayoutProps) => {
+  if (gameState.isGameEnded) {
+    return (
+      <ScoresScreen
+        players={gameState.players}
+        rounds={gameState.rounds}
+        playerGuesses={{}} // We'll need to implement this
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-cream p-4">
       <div className="max-w-6xl mx-auto pt-10">

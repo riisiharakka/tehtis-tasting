@@ -13,3 +13,12 @@ export type Round = {
   correct_country: string;
   created_at: string;
 };
+
+export type PlayerGuess = {
+  id: string;
+  player_id: string;
+  round_id: string;
+  guessed_country: string;
+  guessed_selector: string;
+  created_at: string;
+};
