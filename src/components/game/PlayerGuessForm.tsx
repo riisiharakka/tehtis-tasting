@@ -94,29 +94,28 @@ export const PlayerGuessForm = ({ roundId, playerId, onSubmit }: PlayerGuessForm
 
         <div className="space-y-2">
           <Label>Selected By</Label>
-          <div className="grid grid-cols-2 gap-4">
-            {['Harri', 'Silja'].map((name) => (
-              <div
-                key={name}
-                className={`
-                  p-4 rounded-lg border-2 cursor-pointer transition-all
-                  ${selector === name 
-                    ? 'border-wine bg-wine/10 shadow-md' 
-                    : 'border-gray-200 hover:border-wine/50'}
-                `}
-                onClick={() => setSelector(name)}
-              >
-                <RadioGroup value={selector} onValueChange={setSelector}>
+          <RadioGroup value={selector} onValueChange={setSelector}>
+            <div className="grid grid-cols-2 gap-4">
+              {['Harri', 'Silja'].map((name) => (
+                <div
+                  key={name}
+                  className={`
+                    p-4 rounded-lg border-2 cursor-pointer transition-all
+                    ${selector === name 
+                      ? 'border-wine bg-wine/10 shadow-md' 
+                      : 'border-gray-200 hover:border-wine/50'}
+                  `}
+                >
                   <div className="flex items-center justify-center space-x-2">
                     <RadioGroupItem value={name} id={name.toLowerCase()} />
                     <Label htmlFor={name.toLowerCase()} className="cursor-pointer">
                       {name}
                     </Label>
                   </div>
-                </RadioGroup>
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          </RadioGroup>
         </div>
       </div>
 
