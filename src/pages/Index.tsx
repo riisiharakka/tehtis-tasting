@@ -3,7 +3,7 @@ import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Wine } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -55,6 +55,21 @@ const Index = () => {
         addPlayer(name, true);
         navigate(`/host-lobby/${sessionData.id}`);
       } else {
+        // For regular players, we need to add them to an existing session
+        // For now, we'll navigate them to the waiting screen
+        // They'll need to input a session code later to join a specific game
+        const { error: playerError } = await supabase
+          .from('game_players')
+          .insert([
+            {
+              session_id: '6bfc8271-40da-45f0-83cf-d269bffa1e7b', // This should be replaced with actual session input
+              player_name: name,
+              is_host: false
+            }
+          ]);
+
+        if (playerError) throw playerError;
+
         addPlayer(name, false);
         navigate('/waiting');
       }
