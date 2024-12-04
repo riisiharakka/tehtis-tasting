@@ -22,8 +22,8 @@ export const RoundsList = ({
   const [guesses, setGuesses] = useState<Record<string, { country: string; selector: string }>>({});
   const { toast } = useToast();
 
-  // Validate playerId when component mounts
   useEffect(() => {
+    console.log('RoundsList mounted with playerId:', playerId);
     if (!playerId) {
       console.error('No player ID available');
       toast({
@@ -31,10 +31,43 @@ export const RoundsList = ({
         description: "Player ID is missing. Please try rejoining the game.",
         variant: "destructive",
       });
+      return;
     }
+
+    // Fetch existing guesses for this player
+    const fetchExistingGuesses = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('player_guesses')
+          .select('*')
+          .eq('player_id', playerId);
+
+        if (error) {
+          console.error('Error fetching existing guesses:', error);
+          return;
+        }
+
+        if (data) {
+          const formattedGuesses = data.reduce((acc, guess) => ({
+            ...acc,
+            [guess.round_id]: {
+              country: guess.guessed_country,
+              selector: guess.guessed_selector,
+            },
+          }), {});
+          setGuesses(formattedGuesses);
+        }
+      } catch (error) {
+        console.error('Error in fetchExistingGuesses:', error);
+      }
+    };
+
+    fetchExistingGuesses();
   }, [playerId, toast]);
 
   const handleSubmit = async (roundId: string) => {
+    console.log('Handling submit for round:', roundId, 'with playerId:', playerId);
+    
     if (!playerId) {
       console.error('Attempting to submit without player ID');
       toast({
@@ -46,81 +79,69 @@ export const RoundsList = ({
     }
 
     const guess = guesses[roundId];
-    if (guess) {
-      try {
-        console.log('Submitting guess for player:', playerId, 'round:', roundId);
-        
-        // Check if a guess already exists
-        const { data: existingGuess, error } = await supabase
-          .from('player_guesses')
-          .select('id')
-          .eq('player_id', playerId)
-          .eq('round_id', roundId)
-          .maybeSingle();
+    if (!guess) {
+      console.error('No guess data available for submission');
+      return;
+    }
 
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error checking existing guess:', error);
-          toast({
-            title: "Error checking existing guess",
-            description: "There was a problem checking your existing guess.",
-            variant: "destructive",
-          });
-          return;
-        }
+    try {
+      console.log('Submitting guess:', { roundId, playerId, guess });
+      
+      // Check if a guess already exists
+      const { data: existingGuess, error: checkError } = await supabase
+        .from('player_guesses')
+        .select('id')
+        .eq('player_id', playerId)
+        .eq('round_id', roundId)
+        .maybeSingle();
 
-        if (existingGuess) {
-          // Update existing guess
-          const { error: updateError } = await supabase
-            .from('player_guesses')
-            .update({
-              guessed_country: guess.country,
-              guessed_selector: guess.selector,
-            })
-            .eq('id', existingGuess.id);
-
-          if (updateError) {
-            console.error('Error updating guess:', updateError);
-            toast({
-              title: "Error updating guess",
-              description: "There was a problem updating your guess.",
-              variant: "destructive",
-            });
-            return;
-          }
-        } else {
-          // Insert new guess
-          const { error: insertError } = await supabase
-            .from('player_guesses')
-            .insert({
-              player_id: playerId,
-              round_id: roundId,
-              guessed_country: guess.country,
-              guessed_selector: guess.selector,
-            });
-
-          if (insertError) {
-            console.error('Error inserting guess:', insertError);
-            toast({
-              title: "Error submitting guess",
-              description: "There was a problem submitting your guess.",
-              variant: "destructive",
-            });
-            return;
-          }
-        }
-
-        onGuessSubmitted(roundId, guess.country, guess.selector);
-        if (currentRoundIndex < rounds.length - 1) {
-          setCurrentRoundIndex(prev => prev + 1);
-        }
-      } catch (error) {
-        console.error('Error handling guess submission:', error);
-        toast({
-          title: "Error",
-          description: "An unexpected error occurred.",
-          variant: "destructive",
-        });
+      if (checkError) {
+        console.error('Error checking existing guess:', checkError);
+        throw checkError;
       }
+
+      if (existingGuess) {
+        // Update existing guess
+        const { error: updateError } = await supabase
+          .from('player_guesses')
+          .update({
+            guessed_country: guess.country,
+            guessed_selector: guess.selector,
+          })
+          .eq('id', existingGuess.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Insert new guess
+        const { error: insertError } = await supabase
+          .from('player_guesses')
+          .insert({
+            player_id: playerId,
+            round_id: roundId,
+            guessed_country: guess.country,
+            guessed_selector: guess.selector,
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      onGuessSubmitted(roundId, guess.country, guess.selector);
+      
+      if (currentRoundIndex < rounds.length - 1) {
+        setCurrentRoundIndex(prev => prev + 1);
+      }
+
+      toast({
+        title: "Success",
+        description: "Your guess has been submitted!",
+      });
+    } catch (error) {
+      console.error('Error submitting guess:', error);
+      toast({
+        title: "Error",
+        description: "There was a problem submitting your guess. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
