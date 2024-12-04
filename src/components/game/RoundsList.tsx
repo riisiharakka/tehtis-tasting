@@ -24,19 +24,31 @@ export const RoundsList = ({
   const { toast } = useToast();
 
   const handleSubmit = async (roundId: string) => {
+    // Validate playerId
+    if (!playerId) {
+      toast({
+        title: "Error",
+        description: "Player ID is missing. Please try rejoining the game.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const guess = guesses[roundId];
     if (guess) {
       try {
+        console.log('Submitting guess for player:', playerId, 'round:', roundId);
+        
         // Check if a guess already exists
         const { data: existingGuess, error } = await supabase
           .from('player_guesses')
           .select('id')
           .eq('player_id', playerId)
           .eq('round_id', roundId)
-          .maybeSingle(); // Using maybeSingle() instead of single()
+          .maybeSingle();
 
         if (error && error.code !== 'PGRST116') {
-          // Only show error toast for errors other than "no rows returned"
+          console.error('Error checking existing guess:', error);
           toast({
             title: "Error checking existing guess",
             description: "There was a problem checking your existing guess.",
@@ -56,6 +68,7 @@ export const RoundsList = ({
             .eq('id', existingGuess.id);
 
           if (updateError) {
+            console.error('Error updating guess:', updateError);
             toast({
               title: "Error updating guess",
               description: "There was a problem updating your guess.",
@@ -75,6 +88,7 @@ export const RoundsList = ({
             });
 
           if (insertError) {
+            console.error('Error inserting guess:', insertError);
             toast({
               title: "Error submitting guess",
               description: "There was a problem submitting your guess.",
