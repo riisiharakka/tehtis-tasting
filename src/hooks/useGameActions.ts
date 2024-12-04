@@ -29,6 +29,8 @@ export function useGameActions(sessionId: string) {
 
   const submitGuess = async (roundId: string, playerId: string, country: string, selector: string) => {
     try {
+      console.log('Submitting guess with:', { roundId, playerId, country, selector });
+      
       const { error } = await supabase
         .from('player_guesses')
         .insert({
@@ -38,7 +40,10 @@ export function useGameActions(sessionId: string) {
           guessed_selector: selector,
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error details:', error);
+        throw error;
+      }
 
       toast({
         title: "Guess Submitted",

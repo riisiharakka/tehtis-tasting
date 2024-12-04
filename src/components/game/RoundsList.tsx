@@ -51,6 +51,7 @@ export const RoundsList = ({
                       [round.id]: { ...prev[round.id], country: e.target.value },
                     }))
                   }
+                  value={guesses[round.id]?.country || ''}
                 >
                   <option value="">Select a country</option>
                   <option value="France">France</option>
@@ -71,6 +72,7 @@ export const RoundsList = ({
                       [round.id]: { ...prev[round.id], selector: e.target.value },
                     }))
                   }
+                  value={guesses[round.id]?.selector || ''}
                 >
                   <option value="">Select who chose this wine</option>
                   <option value="Harri">Harri</option>
