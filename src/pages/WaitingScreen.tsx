@@ -1,8 +1,45 @@
-import { useGame } from '@/contexts/GameContext';
+import { useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Wine } from 'lucide-react';
+import { useGame } from '@/contexts/GameContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const WaitingScreen = () => {
   const { currentRound, currentPlayer } = useGame();
+  const navigate = useNavigate();
+  const { sessionId } = useParams();
+
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const channel = supabase
+      .channel(`waiting_${sessionId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'game_sessions',
+          filter: `id=eq.${sessionId}`,
+        },
+        (payload) => {
+          console.log('Game session update in waiting screen:', payload);
+          const newData = payload.new as any;
+          if (newData.status === 'in_progress') {
+            console.log('Game starting, redirecting to game screen');
+            navigate(`/game/${sessionId}`);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('Waiting screen subscription status:', status);
+      });
+
+    return () => {
+      console.log('Cleaning up waiting screen subscription');
+      void supabase.removeChannel(channel);
+    };
+  }, [sessionId, navigate]);
 
   return (
     <div className="min-h-screen bg-cream p-4">
