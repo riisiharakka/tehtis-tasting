@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trophy, Medal } from "lucide-react";
+import { Trophy, Medal, Check, X } from "lucide-react";
 import type { Player, Round } from '@/types/game';
 
 type PlayerScore = {
@@ -43,7 +43,7 @@ export const ScoresScreen = ({ players, rounds, playerGuesses }: ScoresScreenPro
 
   return (
     <div className="min-h-screen bg-cream p-4">
-      <div className="max-w-4xl mx-auto pt-10">
+      <div className="max-w-4xl mx-auto pt-10 space-y-8">
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <div className="text-center mb-8">
             <Trophy className="w-16 h-16 text-gold mx-auto mb-4" />
@@ -60,6 +60,63 @@ export const ScoresScreen = ({ players, rounds, playerGuesses }: ScoresScreenPro
             )}
           </div>
 
+          <div className="mb-8">
+            <h2 className="text-xl font-serif text-wine mb-4">Round by Round Comparison</h2>
+            <div className="space-y-6">
+              {players.map(player => (
+                <div key={player.id} className="bg-cream/50 p-4 rounded-lg">
+                  <h3 className="font-bold mb-3">{player.player_name}'s Answers</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Round</TableHead>
+                        <TableHead>Correct Country</TableHead>
+                        <TableHead>Your Guess</TableHead>
+                        <TableHead>Correct Selector</TableHead>
+                        <TableHead>Your Guess</TableHead>
+                        <TableHead className="text-right">Points</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {rounds.map(round => {
+                        const guess = playerGuesses[`${player.id}-${round.id}`];
+                        const countryCorrect = guess?.country === round.correct_country;
+                        const selectorCorrect = guess?.selector === round.wine_selector;
+                        const roundPoints = (countryCorrect ? 1 : 0) + (selectorCorrect ? 1 : 0);
+
+                        return (
+                          <TableRow key={round.id}>
+                            <TableCell>{round.round_number}</TableCell>
+                            <TableCell className="flex items-center gap-2">
+                              {round.correct_country}
+                              {countryCorrect ? (
+                                <Check className="w-4 h-4 text-green-500" />
+                              ) : (
+                                <X className="w-4 h-4 text-red-500" />
+                              )}
+                            </TableCell>
+                            <TableCell>{guess?.country || '-'}</TableCell>
+                            <TableCell className="flex items-center gap-2">
+                              {round.wine_selector}
+                              {selectorCorrect ? (
+                                <Check className="w-4 h-4 text-green-500" />
+                              ) : (
+                                <X className="w-4 h-4 text-red-500" />
+                              )}
+                            </TableCell>
+                            <TableCell>{guess?.selector || '-'}</TableCell>
+                            <TableCell className="text-right font-bold">{roundPoints}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <h2 className="text-xl font-serif text-wine mb-4">Final Scores</h2>
           <Table>
             <TableHeader>
               <TableRow>
