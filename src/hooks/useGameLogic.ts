@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useRoundManagement } from './useRoundManagement';
 import type { Player, Round } from '@/types/game';
 
 export function useGameLogic(sessionId: string, isHost: boolean) {
   const { toast } = useToast();
+  const { createNewRound } = useRoundManagement();
   const [gameState, setGameState] = useState({
     currentWine: 1,
     timeRemaining: 120,
@@ -151,25 +153,7 @@ export function useGameLogic(sessionId: string, isHost: boolean) {
     if (!isHost || !sessionId) return;
 
     try {
-      console.log('Creating new round for session:', sessionId);
-      
-      const { data: newRound, error: roundError } = await supabase
-        .from('rounds')
-        .insert({
-          session_id: sessionId,
-          round_number: gameState.currentWine,
-          wine_selector: Math.random() < 0.5 ? 'Harri' : 'Silja',
-          correct_country: ['France', 'Italy', 'Spain'][Math.floor(Math.random() * 3)],
-        })
-        .select()
-        .single();
-
-      if (roundError) {
-        console.error('Error creating round:', roundError);
-        throw roundError;
-      }
-
-      console.log('Round created successfully:', newRound);
+      const newRound = await createNewRound(sessionId, gameState.currentWine);
 
       const { error: sessionError } = await supabase
         .from('game_sessions')
