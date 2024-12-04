@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, Play } from 'lucide-react';
+import { Users, Play, Copy } from 'lucide-react';
 
 type Player = {
   id: string;
@@ -14,11 +14,33 @@ type Player = {
 const HostLobby = () => {
   const { sessionId } = useParams();
   const [players, setPlayers] = useState<Player[]>([]);
+  const [sessionCode, setSessionCode] = useState<string>('');
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Initial fetch of players
+    // Fetch session code and players
+    const fetchSessionData = async () => {
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('game_sessions')
+        .select('code')
+        .eq('id', sessionId)
+        .single();
+
+      if (sessionError) {
+        toast({
+          title: "Error fetching session",
+          description: "Could not load the session details.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (sessionData) {
+        setSessionCode(sessionData.code);
+      }
+    };
+
     const fetchPlayers = async () => {
       const { data, error } = await supabase
         .from('game_players')
@@ -38,6 +60,7 @@ const HostLobby = () => {
       setPlayers(data);
     };
 
+    fetchSessionData();
     fetchPlayers();
 
     // Subscribe to realtime updates
@@ -68,6 +91,14 @@ const HostLobby = () => {
     };
   }, [sessionId, toast]);
 
+  const copySessionCode = async () => {
+    await navigator.clipboard.writeText(sessionCode);
+    toast({
+      title: "Code copied!",
+      description: "Share this code with your guests.",
+    });
+  };
+
   const startRound = async () => {
     if (players.length < 2) {
       toast({
@@ -91,7 +122,6 @@ const HostLobby = () => {
         description: "The wine tasting has begun.",
       });
       
-      // Navigate to the game screen after successful status update
       navigate(`/game/${sessionId}`);
     } catch (error) {
       toast({
@@ -111,6 +141,26 @@ const HostLobby = () => {
             <h1 className="text-2xl font-serif text-wine">Host Lobby</h1>
             <p className="text-gray-600 mt-2">Waiting for guests to join...</p>
           </div>
+
+          {sessionCode && (
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <h2 className="font-medium mb-2">Session Code</h2>
+              <div className="flex items-center justify-between bg-white p-3 rounded border">
+                <span className="font-mono text-lg">{sessionCode}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={copySessionCode}
+                  className="text-wine hover:text-wine-light"
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                Share this code with your guests
+              </p>
+            </div>
+          )}
 
           <div className="space-y-4">
             <div className="border rounded-lg p-4">
