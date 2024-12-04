@@ -3,7 +3,7 @@ import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Wine } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -42,6 +42,7 @@ const Index = () => {
     try {
       if (isHost) {
         const code = generateSessionCode();
+        console.log('Creating new session with code:', code);
         
         // Create a new game session
         const { data: sessionData, error: sessionError } = await supabase
@@ -56,7 +57,16 @@ const Index = () => {
           .select()
           .single();
 
-        if (sessionError) throw sessionError;
+        if (sessionError) {
+          console.error('Error creating session:', sessionError);
+          throw sessionError;
+        }
+
+        if (!sessionData) {
+          throw new Error('No session data returned after creation');
+        }
+
+        console.log('Session created successfully:', sessionData);
 
         // Add host to game_players
         const { error: playerError } = await supabase
@@ -69,7 +79,10 @@ const Index = () => {
             }
           ]);
 
-        if (playerError) throw playerError;
+        if (playerError) {
+          console.error('Error adding host to players:', playerError);
+          throw playerError;
+        }
 
         addPlayer(name, true);
         navigate(`/host-lobby/${sessionData.id}`);
@@ -101,7 +114,10 @@ const Index = () => {
             }
           ]);
 
-        if (playerError) throw playerError;
+        if (playerError) {
+          console.error('Error adding player:', playerError);
+          throw playerError;
+        }
 
         addPlayer(name, false);
         navigate('/waiting');
