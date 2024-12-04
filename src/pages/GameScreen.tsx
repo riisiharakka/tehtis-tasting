@@ -36,13 +36,15 @@ const GameScreen = () => {
 
   useEffect(() => {
     const fetchGameData = async () => {
+      console.log('Fetching game data for session:', sessionId);
       const { data: sessionData, error: sessionError } = await supabase
         .from('game_sessions')
         .select('status')
         .eq('id', sessionId)
         .single();
 
-      if (sessionError || !sessionData) {
+      if (sessionError) {
+        console.error('Error fetching session:', sessionError);
         toast({
           title: "Error fetching session",
           description: "Could not load the game session.",
@@ -59,6 +61,7 @@ const GameScreen = () => {
     };
 
     const fetchPlayers = async () => {
+      console.log('Fetching players for session:', sessionId);
       const { data: playersData, error: playersError } = await supabase
         .from('game_players')
         .select('*')
@@ -66,6 +69,7 @@ const GameScreen = () => {
         .order('joined_at', { ascending: true });
 
       if (playersError) {
+        console.error('Error fetching players:', playersError);
         toast({
           title: "Error fetching players",
           description: "Could not load the player list.",
@@ -74,16 +78,20 @@ const GameScreen = () => {
         return;
       }
 
-      const { data: roundData } = await supabase
+      const { data: roundData, error: roundError } = await supabase
         .from('rounds')
         .select('*')
         .eq('session_id', sessionId)
         .order('round_number', { ascending: false })
         .limit(1);
 
+      if (roundError) {
+        console.error('Error fetching rounds:', roundError);
+      }
+
       setGameState(prev => ({
         ...prev,
-        players: playersData,
+        players: playersData || [],
         currentRound: roundData?.[0] || null,
         currentWine: roundData?.[0]?.round_number || 1,
       }));
@@ -142,7 +150,7 @@ const GameScreen = () => {
           table: 'player_guesses',
         },
         () => {
-          fetchPlayers(); // Refresh player list to update submission status
+          fetchPlayers();
         }
       )
       .subscribe();
@@ -169,85 +177,91 @@ const GameScreen = () => {
   }, [gameState.isGuessing, gameState.timeRemaining]);
 
   const startGuessing = async () => {
-    if (isHost) {
-      try {
-        // Create new round with explicit session_id
-        const { data: newRound, error: roundError } = await supabase
-          .from('rounds')
-          .insert({
-            session_id: sessionId,
-            round_number: gameState.currentWine,
-            wine_selector: Math.random() < 0.5 ? 'Harri' : 'Silja',
-            correct_country: ['France', 'Italy', 'Spain'][Math.floor(Math.random() * 3)],
-          })
-          .select()
-          .single();
+    if (!isHost || !sessionId) return;
 
-        if (roundError) {
-          console.error('Error creating round:', roundError);
-          throw roundError;
-        }
+    try {
+      console.log('Creating new round for session:', sessionId);
+      
+      // Create new round
+      const { data: newRound, error: roundError } = await supabase
+        .from('rounds')
+        .insert({
+          session_id: sessionId,
+          round_number: gameState.currentWine,
+          wine_selector: Math.random() < 0.5 ? 'Harri' : 'Silja',
+          correct_country: ['France', 'Italy', 'Spain'][Math.floor(Math.random() * 3)],
+        })
+        .select()
+        .single();
 
-        if (!newRound) {
-          throw new Error('No round data returned after creation');
-        }
-
-        // Update session status
-        const { error: sessionError } = await supabase
-          .from('game_sessions')
-          .update({ status: 'tasting' })
-          .eq('id', sessionId);
-
-        if (sessionError) {
-          console.error('Error updating session status:', sessionError);
-          throw sessionError;
-        }
-
-        setGameState(prev => ({
-          ...prev,
-          isGuessing: true,
-          currentRound: newRound,
-        }));
-
-        toast({
-          title: "Round Started",
-          description: `Round ${gameState.currentWine} has begun!`,
-        });
-      } catch (error) {
-        console.error('Error starting round:', error);
-        toast({
-          title: "Error",
-          description: "Could not start the round.",
-          variant: "destructive",
-        });
+      if (roundError) {
+        console.error('Error creating round:', roundError);
+        throw roundError;
       }
+
+      console.log('Round created successfully:', newRound);
+
+      // Update session status
+      const { error: sessionError } = await supabase
+        .from('game_sessions')
+        .update({ status: 'tasting' })
+        .eq('id', sessionId);
+
+      if (sessionError) {
+        console.error('Error updating session status:', sessionError);
+        throw sessionError;
+      }
+
+      setGameState(prev => ({
+        ...prev,
+        isGuessing: true,
+        currentRound: newRound,
+      }));
+
+      toast({
+        title: "Round Started",
+        description: `Round ${gameState.currentWine} has begun!`,
+      });
+    } catch (error) {
+      console.error('Error starting round:', error);
+      toast({
+        title: "Error",
+        description: "Could not start the round.",
+        variant: "destructive",
+      });
     }
   };
 
   const pauseGuessing = async () => {
-    if (isHost) {
-      try {
-        await supabase
-          .from('game_sessions')
-          .update({ status: 'paused' })
-          .eq('id', sessionId);
+    if (!isHost || !sessionId) return;
 
-        setGameState(prev => ({
-          ...prev,
-          isGuessing: false,
-        }));
+    try {
+      const { error: sessionError } = await supabase
+        .from('game_sessions')
+        .update({ status: 'paused' })
+        .eq('id', sessionId);
 
-        toast({
-          title: "Round Paused",
-          description: "The round has been paused.",
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Could not pause the round.",
-          variant: "destructive",
-        });
+      if (sessionError) {
+        console.error('Error pausing session:', sessionError);
+        throw sessionError;
       }
+
+      setGameState(prev => ({
+        ...prev,
+        isGuessing: false,
+      }));
+
+      toast({
+        title: "Round Paused",
+        description: "The round has been paused.",
+      });
+    } catch (error) {
+      console.error('Error pausing round:', error);
+      toast({
+        title: "Error",
+        description: "Could not pause the round.",
+        variant: "destructive",
+      });
     }
   };
 
