@@ -90,8 +90,9 @@ const HostLobby = () => {
         title: "Round started!",
         description: "The wine tasting has begun.",
       });
-      // Navigate to the game screen (you'll need to create this)
-      // navigate(`/game/${sessionId}`);
+      
+      // Navigate to the game screen after successful status update
+      navigate(`/game/${sessionId}`);
     } catch (error) {
       toast({
         title: "Error starting round",
