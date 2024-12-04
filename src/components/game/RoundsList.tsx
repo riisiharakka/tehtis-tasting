@@ -87,21 +87,24 @@ export const RoundsList = ({
     try {
       console.log('Submitting guess:', { roundId, playerId, guess });
       
-      // First, try to update any existing guess
-      const { data: updateResult, error: updateError } = await supabase
+      const { error: upsertError } = await supabase
         .from('player_guesses')
-        .upsert({
-          player_id: playerId,
-          round_id: roundId,
-          guessed_country: guess.country,
-          guessed_selector: guess.selector,
-        }, {
-          onConflict: 'player_id,round_id'
-        });
+        .upsert(
+          {
+            player_id: playerId,
+            round_id: roundId,
+            guessed_country: guess.country,
+            guessed_selector: guess.selector,
+          },
+          {
+            onConflict: 'player_id,round_id',
+            ignoreDuplicates: false
+          }
+        );
 
-      if (updateError) {
-        console.error('Error updating/inserting guess:', updateError);
-        throw updateError;
+      if (upsertError) {
+        console.error('Error upserting guess:', upsertError);
+        throw upsertError;
       }
 
       onGuessSubmitted(roundId, guess.country, guess.selector);
