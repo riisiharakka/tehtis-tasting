@@ -10,9 +10,11 @@ import { supabase } from '@/integrations/supabase/client';
 const Index = () => {
   const [name, setName] = useState('');
   const [adminCode, setAdminCode] = useState('');
+  const [sessionCode, setSessionCode] = useState('');
   const { addPlayer } = useGame();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const isHost = adminCode === '1234';
 
   const handleJoin = async () => {
     if (!name.trim()) {
@@ -24,7 +26,14 @@ const Index = () => {
       return;
     }
 
-    const isHost = adminCode === '1234'; // Simple admin code for demo
+    if (!isHost && !sessionCode.trim()) {
+      toast({
+        title: "Session code required",
+        description: "Please enter a session code to join the tasting.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       if (isHost) {
@@ -55,14 +64,28 @@ const Index = () => {
         addPlayer(name, true);
         navigate(`/host-lobby/${sessionData.id}`);
       } else {
-        // For regular players, we need to add them to an existing session
-        // For now, we'll navigate them to the waiting screen
-        // They'll need to input a session code later to join a specific game
+        // Verify session exists
+        const { data: sessionData, error: sessionError } = await supabase
+          .from('game_sessions')
+          .select('*')
+          .eq('id', sessionCode)
+          .single();
+
+        if (sessionError || !sessionData) {
+          toast({
+            title: "Invalid session",
+            description: "The session code you entered doesn't exist.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Add player to existing session
         const { error: playerError } = await supabase
           .from('game_players')
           .insert([
             {
-              session_id: '6bfc8271-40da-45f0-83cf-d269bffa1e7b', // This should be replaced with actual session input
+              session_id: sessionCode,
               player_name: name,
               is_host: false
             }
@@ -123,6 +146,21 @@ const Index = () => {
                 className="w-full"
               />
             </div>
+
+            {!isHost && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Session Code
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Enter the session code to join"
+                  value={sessionCode}
+                  onChange={(e) => setSessionCode(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+            )}
 
             <Button 
               onClick={handleJoin}
