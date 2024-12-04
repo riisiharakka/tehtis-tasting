@@ -70,16 +70,16 @@ export const PlayerGuessForm = ({ roundId, playerId, onSubmit }: PlayerGuessForm
             </SelectTrigger>
             <SelectContent>
               {[
-                'France',
-                'Italy',
-                'Spain',
-                'Germany',
-                'Portugal',
-                'USA',
-                'Argentina',
-                'Chile',
                 'Australia',
-                'South Africa',
+                'Chile',
+                'France',
+                'Germany',
+                'Italy',
+                'Japan',
+                'Korea',
+                'Portugal',
+                'Spain',
+                'USA',
               ].map((countryName) => (
                 <SelectItem key={countryName} value={countryName}>
                   <div className="flex items-center gap-2">
@@ -92,31 +92,28 @@ export const PlayerGuessForm = ({ roundId, playerId, onSubmit }: PlayerGuessForm
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label>Selected By</Label>
-          <RadioGroup value={selector} onValueChange={setSelector}>
-            <div className="grid grid-cols-2 gap-4">
-              {['Harri', 'Silja'].map((name) => (
-                <div
-                  key={name}
-                  className={`
-                    p-4 rounded-lg border-2 cursor-pointer transition-all
-                    ${selector === name 
-                      ? 'border-wine bg-wine/10 shadow-md' 
-                      : 'border-gray-200 hover:border-wine/50'}
-                  `}
-                >
-                  <div className="flex items-center justify-center space-x-2">
-                    <RadioGroupItem value={name} id={name.toLowerCase()} />
-                    <Label htmlFor={name.toLowerCase()} className="cursor-pointer">
-                      {name}
-                    </Label>
-                  </div>
+        <RadioGroup value={selector} onValueChange={setSelector}>
+          <div className="grid grid-cols-2 gap-4">
+            {['Harri', 'Silja'].map((name) => (
+              <div
+                key={name}
+                className={`
+                  p-4 rounded-lg border-2 cursor-pointer transition-all
+                  ${selector === name 
+                    ? 'border-wine bg-wine/10 shadow-md' 
+                    : 'border-gray-200 hover:border-wine/50'}
+                `}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <RadioGroupItem value={name} id={name.toLowerCase()} />
+                  <Label htmlFor={name.toLowerCase()} className="cursor-pointer">
+                    {name}
+                  </Label>
                 </div>
-              ))}
-            </div>
-          </RadioGroup>
-        </div>
+              </div>
+            ))}
+          </div>
+        </RadioGroup>
       </div>
 
       <Button type="submit" className="w-full bg-wine hover:bg-wine-light">
