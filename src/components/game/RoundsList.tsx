@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Wine } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import type { Round } from '@/types/game';
 
 type RoundsListProps = {
@@ -9,7 +8,6 @@ type RoundsListProps = {
   onGuessSubmitted: (roundId: string, country: string, selector: string) => void;
   isGameEnded: boolean;
   isHost: boolean;
-  onEndGame?: () => void;
 };
 
 export const RoundsList = ({
@@ -18,7 +16,6 @@ export const RoundsList = ({
   onGuessSubmitted,
   isGameEnded,
   isHost,
-  onEndGame,
 }: RoundsListProps) => {
   const [currentRoundIndex, setCurrentRoundIndex] = useState(0);
   const [guesses, setGuesses] = useState<Record<string, { country: string; selector: string }>>({});
@@ -104,24 +101,13 @@ export const RoundsList = ({
             </select>
           </div>
 
-          <div className="space-y-4">
-            <button
-              onClick={() => handleSubmit(currentRound.id)}
-              className="w-full bg-wine hover:bg-wine/90 text-white py-2 px-4 rounded-lg"
-              disabled={!guesses[currentRound.id]?.country || !guesses[currentRound.id]?.selector}
-            >
-              Submit Guess
-            </button>
-
-            {isHost && onEndGame && (
-              <Button
-                onClick={onEndGame}
-                className="w-full bg-wine hover:bg-wine/90 text-white"
-              >
-                End Game & Show Scores
-              </Button>
-            )}
-          </div>
+          <button
+            onClick={() => handleSubmit(currentRound.id)}
+            className="w-full bg-wine hover:bg-wine/90 text-white py-2 px-4 rounded-lg"
+            disabled={!guesses[currentRound.id]?.country || !guesses[currentRound.id]?.selector}
+          >
+            Submit Guess
+          </button>
         </div>
       </div>
     </div>

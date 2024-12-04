@@ -3,6 +3,7 @@ import { PlayerList } from './PlayerList';
 import { RoundsList } from './RoundsList';
 import { ScoresScreen } from './ScoresScreen';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
 import type { Player, Round, PlayerGuess } from '@/types/game';
 
 type GameLayoutProps = {
@@ -75,11 +76,18 @@ export const GameLayout = ({
               onGuessSubmitted={onGuessSubmitted}
               isGameEnded={gameState.isGameEnded}
               isHost={isHost}
-              onEndGame={onEndGame}
             />
           </div>
-          <div>
+          <div className="space-y-4">
             <PlayerList players={gameState.players} />
+            {isHost && (
+              <Button
+                onClick={onEndGame}
+                className="w-full bg-wine hover:bg-wine/90 text-white"
+              >
+                End Game & Show Scores
+              </Button>
+            )}
           </div>
         </div>
       </div>
