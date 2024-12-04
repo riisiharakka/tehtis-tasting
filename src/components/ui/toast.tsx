@@ -49,6 +49,7 @@ const Toast = React.forwardRef<
     if (props.open) {
       const duration = 3000;
       const startTime = Date.now();
+      let animationFrame: number;
       
       const updateProgress = () => {
         const elapsed = Date.now() - startTime;
@@ -56,11 +57,17 @@ const Toast = React.forwardRef<
         setProgress(remaining);
 
         if (remaining > 0) {
-          requestAnimationFrame(updateProgress);
+          animationFrame = requestAnimationFrame(updateProgress);
         }
       };
 
-      requestAnimationFrame(updateProgress);
+      animationFrame = requestAnimationFrame(updateProgress);
+      
+      return () => {
+        if (animationFrame) {
+          cancelAnimationFrame(animationFrame);
+        }
+      };
     }
   }, [props.open]);
 
@@ -73,8 +80,11 @@ const Toast = React.forwardRef<
       <div className="relative">
         {props.children}
         <div 
-          className="absolute bottom-0 left-0 h-1 bg-primary rounded-full transition-all duration-75"
-          style={{ width: `${progress}%` }}
+          className="absolute bottom-0 left-0 h-1 bg-primary rounded-full transition-all ease-linear"
+          style={{ 
+            width: `${progress}%`,
+            transitionDuration: '100ms'
+          }}
         />
       </div>
     </ToastPrimitives.Root>

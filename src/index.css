@@ -45,7 +45,7 @@
 }
 
 [role="status"] [data-state="closed"] {
-  @apply opacity-0 transition-opacity duration-300;
+  @apply opacity-0 transition-all duration-500 ease-in-out;
 }
 
 [toast-close] {
