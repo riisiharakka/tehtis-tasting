@@ -44,7 +44,6 @@ const Index = () => {
         const code = generateSessionCode();
         console.log('Creating new session with code:', code);
         
-        // Create a new game session with explicit insert
         const { data: sessionData, error: sessionError } = await supabase
           .from('game_sessions')
           .insert({
@@ -66,7 +65,6 @@ const Index = () => {
 
         console.log('Session created successfully:', sessionData);
 
-        // Add host to game_players with explicit session_id
         const { error: playerError } = await supabase
           .from('game_players')
           .insert({
@@ -114,7 +112,8 @@ const Index = () => {
         }
 
         addPlayer(name, false);
-        navigate('/waiting');
+        // Pass the sessionId to the waiting screen
+        navigate('/waiting', { state: { sessionId: sessionData.id } });
       }
 
       toast({
