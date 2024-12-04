@@ -34,7 +34,6 @@ export const RoundsList = ({
       return;
     }
 
-    // Fetch existing guesses for this player
     const fetchExistingGuesses = async () => {
       try {
         const { data, error } = await supabase
@@ -87,42 +86,16 @@ export const RoundsList = ({
     try {
       console.log('Submitting guess:', { roundId, playerId, guess });
       
-      // First check if a guess already exists
-      const { data: existingGuess, error: checkError } = await supabase
+      const { error } = await supabase
         .from('player_guesses')
-        .select('id')
-        .eq('player_id', playerId)
-        .eq('round_id', roundId)
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
-        console.error('Error checking existing guess:', checkError);
-        throw checkError;
-      }
-
-      let error;
-      if (existingGuess) {
-        // Update existing guess
-        const { error: updateError } = await supabase
-          .from('player_guesses')
-          .update({
-            guessed_country: guess.country,
-            guessed_selector: guess.selector,
-          })
-          .eq('id', existingGuess.id);
-        error = updateError;
-      } else {
-        // Insert new guess
-        const { error: insertError } = await supabase
-          .from('player_guesses')
-          .insert({
-            player_id: playerId,
-            round_id: roundId,
-            guessed_country: guess.country,
-            guessed_selector: guess.selector,
-          });
-        error = insertError;
-      }
+        .upsert({
+          player_id: playerId,
+          round_id: roundId,
+          guessed_country: guess.country,
+          guessed_selector: guess.selector,
+        }, {
+          onConflict: 'player_id,round_id'
+        });
 
       if (error) {
         console.error('Error submitting guess:', error);
