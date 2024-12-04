@@ -17,7 +17,6 @@ const Index = () => {
   const isHost = adminCode === '1234';
 
   const generateSessionCode = () => {
-    // Generate a 6-character alphanumeric code
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   };
 
@@ -42,15 +41,16 @@ const Index = () => {
 
     try {
       if (isHost) {
-        const generatedCode = isHost ? generateSessionCode() : sessionCode;
+        const code = generateSessionCode();
         
-        // Create a new game session with the host's chosen code
+        // Create a new game session
         const { data: sessionData, error: sessionError } = await supabase
           .from('game_sessions')
           .insert([
             { 
               host_id: name,
-              code: generatedCode
+              code: code,
+              status: 'waiting'
             }
           ])
           .select()
@@ -78,7 +78,7 @@ const Index = () => {
         const { data: sessionData, error: sessionError } = await supabase
           .from('game_sessions')
           .select('*')
-          .eq('code', sessionCode)
+          .eq('code', sessionCode.toUpperCase())
           .single();
 
         if (sessionError || !sessionData) {

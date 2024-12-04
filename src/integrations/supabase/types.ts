@@ -43,18 +43,21 @@ export type Database = {
       }
       game_sessions: {
         Row: {
+          code: string
           created_at: string
           host_id: string
           id: string
           status: string
         }
         Insert: {
+          code?: string
           created_at?: string
           host_id: string
           id?: string
           status?: string
         }
         Update: {
+          code?: string
           created_at?: string
           host_id?: string
           id?: string
