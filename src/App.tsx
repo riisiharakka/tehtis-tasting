@@ -7,6 +7,7 @@ import { GameProvider } from "@/contexts/GameContext";
 import Index from "./pages/Index";
 import WaitingScreen from "./pages/WaitingScreen";
 import HostLobby from "./pages/HostLobby";
+import GameScreen from "./pages/GameScreen";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/waiting" element={<WaitingScreen />} />
             <Route path="/host-lobby/:sessionId" element={<HostLobby />} />
+            <Route path="/game/:sessionId" element={<GameScreen />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
