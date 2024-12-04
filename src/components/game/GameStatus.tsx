@@ -26,17 +26,17 @@ export const GameStatus = ({
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
+    <div className="bg-white p-6 rounded-lg shadow-lg animate-scaleIn">
       <div className="text-center mb-6">
-        <Wine className="w-12 h-12 text-wine mx-auto mb-2" />
-        <h1 className="text-2xl font-serif text-wine">Wine Tasting</h1>
-        <p className="text-gray-600 mt-2">
+        <Wine className="w-12 h-12 text-wine mx-auto mb-2 animate-slideIn" />
+        <h1 className="text-2xl font-serif text-wine animate-slideIn">Wine Tasting</h1>
+        <p className="text-gray-600 mt-2 animate-fadeIn">
           Round {currentWine} of 6
         </p>
       </div>
 
       <div className="space-y-6">
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-4 animate-fadeIn">
           <Timer className="w-6 h-6 text-wine" />
           <span className="text-2xl font-mono">
             {formatTime(timeRemaining)}
@@ -44,11 +44,11 @@ export const GameStatus = ({
         </div>
 
         {isHost && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-slideIn">
             {!isGuessing ? (
               <Button
                 onClick={onStartGuessing}
-                className="w-full bg-wine hover:bg-wine-light text-white"
+                className="w-full bg-wine hover:bg-wine-light text-white transition-all duration-300"
               >
                 <Play className="w-4 h-4 mr-2" />
                 Start Round {currentWine}
@@ -56,7 +56,7 @@ export const GameStatus = ({
             ) : (
               <Button
                 onClick={onPauseGuessing}
-                className="w-full bg-gold hover:bg-gold-light text-white"
+                className="w-full bg-gold hover:bg-gold-light text-white transition-all duration-300"
               >
                 <Pause className="w-4 h-4 mr-2" />
                 Pause Round

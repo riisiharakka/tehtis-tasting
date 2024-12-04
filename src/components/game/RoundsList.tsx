@@ -23,8 +23,12 @@ export const RoundsList = ({
   if (isGameEnded) {
     return (
       <div className="space-y-4">
-        {rounds.map((round) => (
-          <div key={round.id} className="bg-white p-6 rounded-lg shadow-lg">
+        {rounds.map((round, index) => (
+          <div 
+            key={round.id} 
+            className="bg-white p-6 rounded-lg shadow-lg animate-slideIn"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
             <div className="flex items-center gap-4 mb-4">
               <Wine className="w-8 h-8 text-wine" />
               <h2 className="text-2xl font-serif text-wine">Round {round.round_number}</h2>
@@ -51,8 +55,8 @@ export const RoundsList = ({
 
   return (
     <div className="space-y-4">
-      <div className="bg-white p-6 rounded-lg shadow-lg">
-        <div className="flex items-center gap-4 mb-4">
+      <div className="bg-white p-6 rounded-lg shadow-lg animate-scaleIn">
+        <div className="flex items-center gap-4 mb-4 animate-slideIn">
           <Wine className="w-8 h-8 text-wine" />
           <h2 className="text-2xl font-serif text-wine">Round {currentRound.round_number}</h2>
         </div>
