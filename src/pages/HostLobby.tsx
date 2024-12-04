@@ -5,6 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, Play, Copy } from 'lucide-react';
 import { useGame } from '@/contexts/GameContext';
+import { Database } from '@/integrations/supabase/types';
 
 type Player = {
   id: string;
@@ -78,7 +79,9 @@ const HostLobby = () => {
           table: 'game_sessions',
           filter: `id=eq.${sessionId}`,
         },
-        (payload) => {
+        (payload: {
+          new: Database['public']['Tables']['game_sessions']['Row'];
+        }) => {
           if (payload.new.status === 'in_progress') {
             navigate(`/game/${sessionId}`);
           }
