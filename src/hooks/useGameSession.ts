@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useRealtimeSubscription } from './useRealtimeSubscription';
 import { useSessionData } from './useSessionData';
 import type { Player } from '@/types/game';

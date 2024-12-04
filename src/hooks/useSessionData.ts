@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { Player } from '@/types/game';
 
@@ -12,46 +12,56 @@ export function useSessionData(
 
   useEffect(() => {
     const fetchSessionData = async () => {
-      const { data: sessionData, error: sessionError } = await supabase
-        .from('game_sessions')
-        .select('code, status')
-        .eq('id', sessionId)
-        .single();
+      try {
+        const { data: sessionData, error: sessionError } = await supabase
+          .from('game_sessions')
+          .select('code, status')
+          .eq('id', sessionId)
+          .single();
 
-      if (sessionError) {
-        toast({
-          title: "Error fetching session",
-          description: "Could not load the session details.",
-          variant: "destructive",
-        });
-        return;
-      }
+        if (sessionError) {
+          toast({
+            title: "Error fetching session",
+            description: "Could not load the session details.",
+            variant: "destructive",
+          });
+          return;
+        }
 
-      if (sessionData) {
-        setSessionCode(sessionData.code);
+        if (sessionData) {
+          setSessionCode(sessionData.code);
+        }
+      } catch (error) {
+        console.error('Error in fetchSessionData:', error);
       }
     };
 
     const fetchPlayers = async () => {
-      const { data, error } = await supabase
-        .from('game_players')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('joined_at', { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from('game_players')
+          .select('*')
+          .eq('session_id', sessionId)
+          .order('joined_at', { ascending: true });
 
-      if (error) {
-        toast({
-          title: "Error fetching players",
-          description: "Could not load the player list.",
-          variant: "destructive",
-        });
-        return;
+        if (error) {
+          toast({
+            title: "Error fetching players",
+            description: "Could not load the player list.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (data) {
+          setPlayers(data);
+        }
+      } catch (error) {
+        console.error('Error in fetchPlayers:', error);
       }
-
-      setPlayers(data);
     };
 
-    fetchSessionData();
-    fetchPlayers();
+    void fetchSessionData();
+    void fetchPlayers();
   }, [sessionId, setSessionCode, setPlayers, toast]);
 }
