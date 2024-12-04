@@ -86,22 +86,23 @@ export const RoundsList = ({
     try {
       console.log('Submitting guess:', { roundId, playerId, guess });
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('player_guesses')
         .upsert({
           player_id: playerId,
           round_id: roundId,
           guessed_country: guess.country,
           guessed_selector: guess.selector,
-        }, {
-          onConflict: 'player_id,round_id'
-        });
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error('Error submitting guess:', error);
         throw error;
       }
 
+      console.log('Guess submitted successfully:', data);
       onGuessSubmitted(roundId, guess.country, guess.selector);
       
       if (currentRoundIndex < rounds.length - 1) {
