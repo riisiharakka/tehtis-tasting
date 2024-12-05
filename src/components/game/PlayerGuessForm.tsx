@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Flag } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 type PlayerGuessFormProps = {
   roundId: string;
@@ -45,7 +46,6 @@ export const PlayerGuessForm = ({ roundId, playerId, onSubmit }: PlayerGuessForm
         description: "Your guess has been recorded.",
       });
       
-      // Reset form fields after successful submission
       setCountry('');
       setSelector('');
       
@@ -93,28 +93,40 @@ export const PlayerGuessForm = ({ roundId, playerId, onSubmit }: PlayerGuessForm
           </Select>
         </div>
 
-        <RadioGroup value={selector} onValueChange={setSelector}>
-          <div className="grid grid-cols-2 gap-4">
-            {['Harri', 'Silja'].map((name) => (
-              <div
-                key={name}
-                className={`
-                  p-4 rounded-lg border-2 cursor-pointer transition-all
-                  ${selector === name 
-                    ? 'border-wine bg-wine/10 shadow-md' 
-                    : 'border-gray-200 hover:border-wine/50'}
-                `}
-              >
-                <div className="flex items-center justify-center space-x-2">
-                  <RadioGroupItem value={name} id={name.toLowerCase()} />
-                  <Label htmlFor={name.toLowerCase()} className="cursor-pointer">
-                    {name}
-                  </Label>
+        <div>
+          <Label className="mb-3 block">Who selected the wine?</Label>
+          <RadioGroup value={selector} onValueChange={setSelector}>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { name: 'Harri', image: '/lovable-uploads/140e8eea-aa63-4cf5-b47a-3673b9f5ec56.png' },
+                { name: 'Silja', image: '/lovable-uploads/fcce27ab-cc94-471f-9a84-aec3087b387b.png' }
+              ].map(({ name, image }) => (
+                <div
+                  key={name}
+                  className={`
+                    p-4 rounded-lg border-2 cursor-pointer transition-all
+                    ${selector === name 
+                      ? 'border-wine bg-wine/10 shadow-md' 
+                      : 'border-gray-200 hover:border-wine/50'}
+                  `}
+                >
+                  <div className="flex flex-col items-center space-y-3">
+                    <Avatar className="w-20 h-20">
+                      <AvatarImage src={image} alt={name} className="object-cover" />
+                      <AvatarFallback>{name[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex items-center justify-center space-x-2">
+                      <RadioGroupItem value={name} id={name.toLowerCase()} />
+                      <Label htmlFor={name.toLowerCase()} className="cursor-pointer">
+                        {name}
+                      </Label>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </RadioGroup>
+              ))}
+            </div>
+          </RadioGroup>
+        </div>
       </div>
 
       <Button type="submit" className="w-full bg-wine hover:bg-wine-light">
