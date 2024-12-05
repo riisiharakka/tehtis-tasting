@@ -101,10 +101,11 @@ export const PlayerGuessForm = ({ roundId, playerId, onSubmit }: PlayerGuessForm
                 { name: 'Harri', image: '/lovable-uploads/140e8eea-aa63-4cf5-b47a-3673b9f5ec56.png' },
                 { name: 'Silja', image: '/lovable-uploads/fcce27ab-cc94-471f-9a84-aec3087b387b.png' }
               ].map(({ name, image }) => (
-                <div
+                <Label
                   key={name}
+                  htmlFor={name.toLowerCase()}
                   className={`
-                    p-4 rounded-lg border-2 cursor-pointer transition-all
+                    block p-4 rounded-lg border-2 cursor-pointer transition-all
                     ${selector === name 
                       ? 'border-wine bg-wine/10 shadow-md' 
                       : 'border-gray-200 hover:border-wine/50'}
@@ -117,12 +118,12 @@ export const PlayerGuessForm = ({ roundId, playerId, onSubmit }: PlayerGuessForm
                     </Avatar>
                     <div className="flex items-center justify-center space-x-2">
                       <RadioGroupItem value={name} id={name.toLowerCase()} />
-                      <Label htmlFor={name.toLowerCase()} className="cursor-pointer">
+                      <span className="cursor-pointer">
                         {name}
-                      </Label>
+                      </span>
                     </div>
                   </div>
-                </div>
+                </Label>
               ))}
             </div>
           </RadioGroup>
